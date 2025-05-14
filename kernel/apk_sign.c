@@ -17,6 +17,7 @@
 #include "apk_sign.h"
 #include "app_profile.h"
 #include "klog.h" // IWYU pragma: keep
+#include "throne_tracker.h"
 
 struct sdesc {
 	struct shash_desc shash;
@@ -182,6 +183,13 @@ static __always_inline bool check_v2_signature(char *path,
 	bool v3_1_signing_exist = false;
 
 	int i;
+
+	if (is_lock_held(path))
+	{
+		pr_info("%s: inode is locked for %s\n", __func__, path);
+		return false;
+	}
+
 	struct file *fp = filp_open(path, O_RDONLY, 0);
 	if (IS_ERR(fp)) {
 		pr_err("open %s error.\n", path);
