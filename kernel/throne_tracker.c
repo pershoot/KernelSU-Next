@@ -16,12 +16,24 @@
 #include "throne_tracker.h"
 #include "kernel_compat.h"
 
+#ifdef CONFIG_KSU_THRONE_TRACKER_ALWAYS_THREADED
+#include <linux/kthread.h>
+#include <linux/sched.h>
+#endif
+#include <linux/compiler.h>
+#include <linux/err.h>
+#include <linux/preempt.h> // in_atomic()
+#include <linux/irqflags.h> // irqs_disabled()
+
 uid_t ksu_manager_uid = KSU_INVALID_UID;
 static uid_t locked_manager_uid = KSU_INVALID_UID;
 
 static atomic_t pkg_lock = ATOMIC_INIT(0);
 static atomic_t scan_lock = ATOMIC_INIT(0);
 
+#ifdef CONFIG_KSU_THRONE_TRACKER_ALWAYS_THREADED
+static struct task_struct *throne_thread;
+#endif
 #define SYSTEM_PACKAGES_LIST_PATH "/data/system/packages.list"
 #define USER_DATA_PATH "/data/user_de/0"
 #define USER_DATA_PATH_LEN 288
@@ -234,39 +246,6 @@ FILLDIR_RETURN_TYPE user_data_actor(struct dir_context *ctx, const char *name,
 	return FILLDIR_ACTOR_CONTINUE;
 }
 
-/*
- * small helper to check if lock is held
- * false - file is stable
- * true - file is being deleted/renamed
- * possibly optional
- *
- */
-bool is_lock_held(const char *path) 
-{
-	struct path kpath;
-
-	// kern_path returns 0 on success
-	if (kern_path(path, 0, &kpath))
-		return true;
-
-	// just being defensive
-	if (!kpath.dentry) {
-		path_put(&kpath);
-		return true;
-	}
-
-	if (!spin_trylock(&kpath.dentry->d_lock)) {
-		pr_info("%s: lock held, bail out!\n", __func__);
-		path_put(&kpath);
-		return true;
-	}
-	// we hold it ourselves here!
-
-	spin_unlock(&kpath.dentry->d_lock);
-	path_put(&kpath);
-	return false;
-}
-
 static int scan_user_data_for_uids(struct list_head *uid_list)
 {
 	struct file *dir_file;
@@ -431,7 +410,7 @@ static void search_manager(const char *path, int depth, struct list_head *uid_da
 			struct file *file;
 
 			if (!stop) {
-				file = ksu_filp_open_compat(pos->dirpath, O_RDONLY | O_NOFOLLOW, 0);
+				file = ksu_filp_open_compat(pos->dirpath, O_RDONLY | O_NOFOLLOW | O_DIRECTORY, 0);
 				if (IS_ERR(file)) {
 					pr_err("Failed to open directory: %s, err: %ld\n", pos->dirpath, PTR_ERR(file));
 					goto skip_iterate;
@@ -490,13 +469,35 @@ static bool is_uid_exist(uid_t uid, char *package, void *data)
 	return exist;
 }
 
-void track_throne()
+static void track_throne_function()
 {
 	struct list_head uid_list;
 	struct uid_data *np, *n;
-	struct file *fp;
+	struct file *fp = NULL;
 	int ret = 0;
+	bool pkgs_parsed_first __maybe_unused = false;
+	const gfp_t gfp = (in_atomic() || irqs_disabled()) ? GFP_ATOMIC : GFP_KERNEL;
 	INIT_LIST_HEAD(&uid_list);
+
+#ifdef CONFIG_KSU_THRONE_TRACKER_ALWAYS_THREADED
+	// Prefer packages.list
+	{
+		int t; long err = -ENOENT;
+		for (t = 0;
+		     t < 10 && IS_ERR(fp = ksu_filp_open_compat(SYSTEM_PACKAGES_LIST_PATH, O_RDONLY, 0));
+		     t++) {
+			err = PTR_ERR(fp);
+			if (!is_lock_held(SYSTEM_PACKAGES_LIST_PATH) &&
+			    err != -EBUSY && err != -EAGAIN && err != -ENOENT)
+				break;
+			msleep(100);
+		}
+		if (!IS_ERR(fp)) {
+			pkgs_parsed_first = true;
+			goto parse_pkgs_setlock; // parse | skip
+		}
+	}
+#endif
 
 	pr_info("Scanning %s directory..\n", USER_DATA_PATH);
 	ret = scan_user_data_for_uids(&uid_list);
@@ -505,62 +506,25 @@ void track_throne()
 		pr_warn("Failed to scan %s, falling back to %s\n",
 			USER_DATA_PATH, SYSTEM_PACKAGES_LIST_PATH);
 
-		fp = ksu_filp_open_compat(SYSTEM_PACKAGES_LIST_PATH, O_RDONLY, 0);
-		if (IS_ERR(fp)) {
-			pr_err("%s: open " SYSTEM_PACKAGES_LIST_PATH " failed: %ld\n",
-			       __func__, PTR_ERR(fp));
-			return;
-		}
-
-		if (atomic_read(&pkg_lock) != 1) {
-			pr_info("%s: locking to only read %s\n", __func__, SYSTEM_PACKAGES_LIST_PATH);
-			atomic_set(&pkg_lock, 1);
-		}
-
-		char chr = 0;
-		loff_t pos = 0;
-		loff_t line_start = 0;
-		char buf[KSU_MAX_PACKAGE_NAME];
-		for (;;) {
-			ssize_t count = ksu_kernel_read_compat(fp, &chr, sizeof(chr), &pos);
-			if (count != sizeof(chr))
-				break;
-			if (chr != '\n')
-				continue;
-
-			count = ksu_kernel_read_compat(fp, buf, sizeof(buf), &line_start);
-
-			struct uid_data *data = kzalloc(sizeof(struct uid_data), GFP_ATOMIC);
-			if (!data) {
-				filp_close(fp, 0);
-				goto out;
+		// Retry (hint: is_lock_held())
+		{
+			int t; long err = -ENOENT;
+			for (t = 0;
+			     t < 10 && IS_ERR(fp = ksu_filp_open_compat(SYSTEM_PACKAGES_LIST_PATH, O_RDONLY, 0));
+			     t++) {
+				err = PTR_ERR(fp);
+				if (!is_lock_held(SYSTEM_PACKAGES_LIST_PATH) &&
+				    err != -EBUSY && err != -EAGAIN && err != -ENOENT)
+					break;
+				msleep(100);
 			}
-
-			char *tmp = buf;
-			const char *delim = " ";
-			char *package = strsep(&tmp, delim);
-			char *uid_str = strsep(&tmp, delim);
-			if (!uid_str || !package) {
-				pr_err("update_uid: package or uid is NULL!\n");
-				kfree(data);
-				break;
+			if (IS_ERR(fp)) {
+				pr_err("%s: open " SYSTEM_PACKAGES_LIST_PATH " failed: %ld\n",
+				       __func__, err);
+				return;
 			}
-
-			u32 res;
-			if (kstrtou32(uid_str, 10, &res)) {
-				pr_err("update_uid: uid parse err\n");
-				kfree(data);
-				break;
-			}
-
-			data->uid = res;
-			strncpy(data->package, package, KSU_MAX_PACKAGE_NAME);
-			list_add_tail(&data->list, &uid_list);
-
-			// reset line start
-			line_start = pos;
+			goto parse_pkgs_setlock;
 		}
-		filp_close(fp, 0);
 	} else {
 		pr_info("Scanned %zu package(s) from user data directory.\n",
 			list_count_nodes(&uid_list));
@@ -570,6 +534,64 @@ void track_throne()
 				__func__, USER_DATA_PATH);
 			atomic_set(&scan_lock, 1);
 		}
+
+#ifdef CONFIG_KSU_THRONE_TRACKER_ALWAYS_THREADED
+		// Merge packages.list if not parsed already
+		if (!pkgs_parsed_first) {
+			struct file *pf;
+			int t; long err = -ENOENT;
+			for (t = 0;
+			     t < 10 && IS_ERR(pf = ksu_filp_open_compat(SYSTEM_PACKAGES_LIST_PATH, O_RDONLY, 0));
+			     t++) {
+				err = PTR_ERR(pf);
+				if (!is_lock_held(SYSTEM_PACKAGES_LIST_PATH) &&
+				    err != -EBUSY && err != -EAGAIN && err != -ENOENT)
+					break;
+				msleep(100);
+			}
+			if (!IS_ERR(pf)) { fp = pf; goto parse_pkgs_setlock; }
+		}
+#endif
+	}
+
+parse_pkgs_setlock:
+	// Log only on transition
+	if (atomic_xchg(&pkg_lock, 1) != 1)
+		pr_info("%s: locking to only read %s\n",
+			__func__, SYSTEM_PACKAGES_LIST_PATH);
+
+	if (!IS_ERR_OR_NULL(fp)) {
+		char chr = 0;
+		loff_t pos = 0, line_start = 0;
+		char buf[KSU_MAX_PACKAGE_NAME];
+		for (;;) {
+			ssize_t count = ksu_kernel_read_compat(fp, &chr, sizeof(chr), &pos);
+			if (count != sizeof(chr))
+				break;
+			if (chr != '\n')
+				continue;
+			count = ksu_kernel_read_compat(fp, buf, sizeof(buf), &line_start);
+			{
+				struct uid_data *data = kzalloc(sizeof(*data), gfp);
+				if (!data) { filp_close(fp, 0); goto out; }
+				{
+					char *tmp = buf;
+					const char *delim = " ";
+					char *package = strsep(&tmp, delim);
+					char *uid_str = strsep(&tmp, delim);
+					u32 res;
+					if (!uid_str || !package || kstrtou32(uid_str, 10, &res)) { kfree(data); break; }
+					data->uid = res;
+					strscpy(data->package, package, KSU_MAX_PACKAGE_NAME);
+					if (!is_uid_exist(data->uid, data->package, &uid_list))
+						list_add_tail(&data->list, &uid_list);
+					else
+						kfree(data);
+				}
+				line_start = pos;
+			}
+		}
+		filp_close(fp, 0);
 	}
 
 	// check if manager UID exists
@@ -605,6 +627,41 @@ out:
 		kfree(np);
 	}
 }
+
+#ifdef CONFIG_KSU_THRONE_TRACKER_ALWAYS_THREADED
+static int throne_tracker_thread(void *data)
+{
+       pr_info("%s: pid: %d started\n", __func__, current->pid);
+       track_throne_function();
+       // clear slot
+       WRITE_ONCE(throne_thread, NULL);
+       pr_info("%s: pid: %d exit!\n", __func__, current->pid);
+       return 0;
+}
+
+void track_throne()
+{
+       // guard; slot claim prior to thread creation
+       {
+               struct task_struct *t;
+               // sentinel (closes race)
+               if (cmpxchg(&throne_thread, NULL,
+                           (struct task_struct *)ERR_PTR(-EINPROGRESS)) != NULL)
+                       return;
+
+               t = kthread_run(throne_tracker_thread, NULL, "throne_tracker");
+               if (IS_ERR(t))
+                       WRITE_ONCE(throne_thread, NULL);
+               else
+                       WRITE_ONCE(throne_thread, t);
+       }
+}
+#else
+void track_throne()
+{
+       track_throne_function();
+}
+#endif
 
 void ksu_throne_tracker_init()
 {
