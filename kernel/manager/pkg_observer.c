@@ -26,6 +26,7 @@ struct watch_dir {
 
 static struct fsnotify_group *g;
 
+#ifndef CONFIG_KSU_THRONE_TRACKER_ALWAYS_THREADED
 static void ksu_track_throne_tw_func(struct callback_head *cb)
 {
     kfree(cb);
@@ -64,6 +65,8 @@ static void ksu_defer_track_throne(void)
     susfs_parse_priority_app_strings();
 #endif
 }
+#endif
+
 
 static int ksu_handle_inode_event(struct fsnotify_mark *mark, u32 mask,
                                   struct inode *inode, struct inode *dir,
@@ -75,7 +78,11 @@ static int ksu_handle_inode_event(struct fsnotify_mark *mark, u32 mask,
         return 0;
     if (file_name->len == 13 && !memcmp(file_name->name, "packages.list", 13)) {
         pr_info("packages.list detected: %d\n", mask);
+#ifdef CONFIG_KSU_THRONE_TRACKER_ALWAYS_THREADED
+        track_throne(false);
+#else
         ksu_defer_track_throne();
+#endif
     }
     return 0;
 }
