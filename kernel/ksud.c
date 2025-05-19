@@ -497,8 +497,11 @@ __maybe_unused int ksu_handle_execve_ksud(const char __user *filename_user,
 	if (!filename_user)
 		return 0;
 
-	memset(path, 0, sizeof(path));
-	ksu_strncpy_from_user_nofault(path, filename_user, 32);
+	long len = ksu_strncpy_from_user_nofault(path, filename_user, 32);
+	if (len <= 0)
+		return 0;
+
+	path[sizeof(path) - 1] = '\0';
 
 	// this is because ksu_handle_execveat_ksud calls it filename->name
 	filename_in.name = path;
