@@ -364,7 +364,7 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 				}
 			}
 
-			bool is_manager = is_manager_apk(dirpath);
+			bool is_manager = ksu_is_manager_apk(dirpath);
 			pr_info("Found new base.apk at path: %s, is_manager: %d\n",
 				dirpath, is_manager);
 			if (is_manager) {
@@ -490,7 +490,7 @@ static bool is_uid_exist(uid_t uid, char *package, void *data)
 	return exist;
 }
 
-void track_throne()
+void ksu_track_throne()
 {
 	struct list_head uid_list;
 	struct uid_data *np, *n;
