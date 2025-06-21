@@ -183,7 +183,13 @@ int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv,
 	return ksu_handle_execveat_sucompat(fd, filename_ptr, argv, envp, flags);
 }
 
+// dummified
 int ksu_handle_devpts(struct inode *inode)
+{
+	return 0;
+}
+
+int __ksu_handle_devpts(struct inode *inode)
 {
 #ifndef CONFIG_KSU_KPROBES_HOOK
 	if (!ksu_sucompat_non_kp) {
