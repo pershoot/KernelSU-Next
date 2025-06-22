@@ -60,20 +60,6 @@ static char __user *ksud_user_path(void)
 	return userspace_stack_buffer(ksud_path, sizeof(ksud_path));
 }
 
-static __attribute__((hot)) long ksu_strncpy_from_user_retry(char *dst,
-			const void __user *unsafe_addr, long count)
-{
-	long ret = ksu_strncpy_from_user_nofault(dst, unsafe_addr, count);
-	if (likely(ret >= 0))
-		return ret;
-
-	// we faulted! fallback to slow path
-	if (unlikely(!ksu_access_ok(unsafe_addr, count)))
-		return -EFAULT;
-
-	return strncpy_from_user(dst, unsafe_addr, count);
-}
-
 static int ksu_sucompat_common(const char __user **filename_user, const char *syscall_name,
                                 const bool escalate)
 {
@@ -90,8 +76,7 @@ static int ksu_sucompat_common(const char __user **filename_user, const char *sy
                 return 0;
 
         char path[sizeof(su) + 1];
-        long len = ksu_strncpy_from_user_retry(path, *filename_user, sizeof(path));
-        if (len <= 0) // sizeof(su) is not zero
+	if (ksu_copy_from_user_retry(path, *filename_user, sizeof(path)))
                 return 0;
 
         path[sizeof(path) - 1] = '\0';
