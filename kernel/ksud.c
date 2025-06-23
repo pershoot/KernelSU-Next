@@ -171,7 +171,7 @@ first_app_process:
 	if (first_app_process && !strcmp(filename, app_process)) {
 		first_app_process = false;
 		pr_info("%s: exec app_process, /data prepared, second_stage: %d\n", __func__, init_second_stage_executed);
-		ksu_on_post_fs_data(); // actual ksud execution
+		ksu_on_post_fs_data();
 		stop_execve_hook();
 	}
 
@@ -194,6 +194,9 @@ static bool is_locked_copy_ok(void *to, const void __user *from, size_t len)
 	// this happening is very bad though
 	// I'm adding this just for the sake of resilience
 	pr_info("%s: _nofault copy failed !! report this incident\n", __func__);
+	if (unlikely(!ksu_access_ok(from, len)))
+		return false;
+
 	return !copy_from_user(to, from, len);
 }
 
