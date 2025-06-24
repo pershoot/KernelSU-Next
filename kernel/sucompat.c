@@ -244,9 +244,6 @@ int ksu_handle_execve_sucompat(int *fd, const char __user **filename_user,
 	if (likely(memcmp(path, su, sizeof(su))))
 		return 0;
 
-	if (!ksu_is_allow_uid(current_uid().val))
-		return 0;
-
 	pr_info("sys_execve su found\n");
 	*filename_user = ksud_user_path();
 
