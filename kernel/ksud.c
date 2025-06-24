@@ -168,7 +168,7 @@ static int ksu_handle_bprm_ksud(const char *filename, const char *argv1, const c
 	}
 
 first_app_process:
-	if (first_app_process && !strcmp(filename, app_process)) {
+	if (first_app_process && !memcmp(filename, app_process, sizeof(app_process) - 1)) {
 		first_app_process = false;
 		pr_info("%s: exec app_process, /data prepared, second_stage: %d\n", __func__, init_second_stage_executed);
 		ksu_on_post_fs_data();
@@ -209,7 +209,7 @@ int ksu_handle_pre_ksud(const char *filename)
 	// not /system/bin/init, not /init, not /system/bin/app_process
 	// return 0;
 	if (likely(strcmp(filename, "/system/bin/init") && strcmp(filename, "/init")
-		&& strcmp(filename, "/system/bin/app_process") ))
+		&& !strstarts(filename, "/system/bin/app_process") ))
 		return 0;
 
 	if (!current || !current->mm)
