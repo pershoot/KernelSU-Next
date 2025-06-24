@@ -178,28 +178,6 @@ first_app_process:
 	return 0;
 }
 
-// needs some locking, checking with copy_from_user_nofault,
-// theres actually failed / incomplete copies
-static bool is_locked_copy_ok(void *to, const void __user *from, size_t len)
-{
-	DEFINE_SPINLOCK(ksu_usercopy_spinlock);
-	spin_lock(&ksu_usercopy_spinlock);
-	bool ret = !ksu_copy_from_user_nofault(to, from, len);
-	spin_unlock(&ksu_usercopy_spinlock);
-
-	if (likely(ret))
-		return ret;
-
-	// if nofault copy fails, well, atleast we can try again
-	// this happening is very bad though
-	// I'm adding this just for the sake of resilience
-	pr_info("%s: _nofault copy failed !! report this incident\n", __func__);
-	if (unlikely(!ksu_access_ok(from, len)))
-		return false;
-
-	return !copy_from_user(to, from, len);
-}
-
 int ksu_handle_pre_ksud(const char *filename)
 {
 
@@ -235,10 +213,10 @@ int ksu_handle_pre_ksud(const char *filename)
 		goto out;
 
 	// we cant use strncpy on here, else it will truncate once it sees \0
-	if (!is_locked_copy_ok(args, (void __user *)arg_start, arg_len))
+	if (ksu_copy_from_user_retry(args, (void __user *)arg_start, arg_len))
 		goto out;
 
-	if (!is_locked_copy_ok(envp, (void __user *)env_start, envp_len))
+	if (ksu_copy_from_user_retry(envp, (void __user *)env_start, envp_len))
 		goto out;
 
 	args[arg_len] = '\0';
