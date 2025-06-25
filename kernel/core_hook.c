@@ -1181,6 +1181,19 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 			}
 		}
 	}
+	// - here we check if uid is a isolated service spawned by zygote directly
+	// - Apps that do not use "useAppZyogte" to start a isolated service will be directly
+	//   spawned by zygote which KSU will ignore it by default, the only fix for now is to
+	//   force a umount for those uid
+	// - Therefore make sure your root app doesn't use isolated service for root access
+	// - Kudos to ThePedroo, the author and maintainer of Rezygisk for finding and reporting
+	//   the detection, really big helps here!
+	if (new_uid.val >= 90000 && new_uid.val < 1000000) {
+		task_lock(current);
+		current->susfs_task_state |= TASK_STRUCT_NON_ROOT_USER_APP_PROC;
+		task_unlock(current);
+		goto out_susfs_try_umount_all;
+	}
 #endif
 
 	if (is_non_appuid(new_uid)) {
@@ -1209,6 +1222,7 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 		task_lock(current);
 		current->susfs_task_state |= TASK_STRUCT_NON_ROOT_USER_APP_PROC;
 		task_unlock(current);
+		goto out_susfs_try_umount_all;
 	}
 #endif
 
@@ -1243,6 +1257,7 @@ do_umount:
 #endif
 
 #ifdef CONFIG_KSU_SUSFS_TRY_UMOUNT
+out_susfs_try_umount_all:
 	// susfs come first, and lastly umount by ksu, make sure umount in reversed order
 	susfs_try_umount_all(new_uid.val);
 #else
