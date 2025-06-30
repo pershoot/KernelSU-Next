@@ -1225,7 +1225,6 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 		task_lock(current);
 		current->susfs_task_state |= TASK_STRUCT_NON_ROOT_USER_APP_PROC;
 		task_unlock(current);
-		goto out_susfs_try_umount_all;
 	}
 #endif
 
