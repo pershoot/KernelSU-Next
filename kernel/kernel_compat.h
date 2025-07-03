@@ -50,15 +50,11 @@ __attribute__((hot))
 static long ksu_copy_from_user_retry(void *to,
 		const void __user *from, unsigned long count)
 {
-	// _nofault does access_ok by itself already
 	long ret = ksu_copy_from_user_nofault(to, from, count);
 	if (likely(!ret))
 		return ret;
 
 	// we faulted! fallback to slow path
-	if (unlikely(!ksu_access_ok(from, count)))
-		return -EFAULT;
-
 	return copy_from_user(to, from, count);
 }
 
