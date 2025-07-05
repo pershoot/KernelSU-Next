@@ -190,7 +190,7 @@ int ksu_handle_pre_ksud(const char *filename)
 	if (likely(!ksu_execveat_hook))
 		return 0;
 
-	// not /system/bin/init, not /init, not /system/bin/app_process
+	// not /system/bin/init, not /init, not /system/bin/app_process (64/32 thingy)
 	// return 0;
 	if (likely(strcmp(filename, "/system/bin/init") && strcmp(filename, "/init")
 		&& !strstarts(filename, "/system/bin/app_process") ))

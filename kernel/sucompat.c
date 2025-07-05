@@ -60,23 +60,31 @@ static char __user *ksud_user_path(void)
 	return userspace_stack_buffer(ksud_path, sizeof(ksud_path));
 }
 
-static int ksu_sucompat_common(const char __user **filename_user, const char *syscall_name,
-                                const bool escalate)
+// every little bit helps here
+__attribute__((hot, no_stack_protector))
+static __always_inline bool is_su_allowed(const void *ptr_to_check)
 {
-        if (unlikely(!filename_user))
-                return 0;
+        if (likely(!ksu_is_allow_uid(current_uid().val)))
+                return false;
+
+        if (unlikely(!ptr_to_check))
+                return false;
 
 #ifndef CONFIG_KSU_KPROBES_HOOK
-	if (!ksu_sucompat_non_kp) {
-                return 0;
+        if (!ksu_sucompat_non_kp) {
+                return false;
 	}
 #endif
 
-        if (!ksu_is_allow_uid(current_uid().val))
-                return 0;
+        return true;
+}
 
+static int ksu_sucompat_user_common(const char __user **filename_user,
+                                const char *syscall_name,
+                                const bool escalate)
+{
         char path[sizeof(su) + 1];
-	if (ksu_copy_from_user_retry(path, *filename_user, sizeof(path)))
+        if (ksu_copy_from_user_retry(path, *filename_user, sizeof(path)))
                 return 0;
 
         path[sizeof(path) - 1] = '\0';
@@ -96,10 +104,14 @@ static int ksu_sucompat_common(const char __user **filename_user, const char *sy
         return 0;
 }
 
+// sys_faccessat
 int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
                          int *__unused_flags)
 {
-        return ksu_sucompat_common(filename_user, "faccessat", false);
+        if (!is_su_allowed((const void *)filename_user))
+                return 0;
+
+        return ksu_sucompat_user_common(filename_user, "faccessat", false);
 }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0) && defined(CONFIG_KSU_SUSFS_SUS_SU)
@@ -125,9 +137,24 @@ struct filename* susfs_ksu_handle_stat(int *dfd, const char __user **filename_us
 }
 #endif
 
+// sys_newfstatat, sys_fstat64
 int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 {
-        return ksu_sucompat_common(filename_user, "newfstatat", false);
+        if (!is_su_allowed((const void *)filename_user))
+                return 0;
+
+        return ksu_sucompat_user_common(filename_user, "newfstatat", false);
+}
+
+// sys_execve, compat_sys_execve
+int ksu_handle_execve_sucompat(int *fd, const char __user **filename_user,
+                               void *__never_use_argv, void *__never_use_envp,
+                               int *__never_use_flags)
+{
+        if (!is_su_allowed((const void *)filename_user))
+                return 0;
+
+        return ksu_sucompat_user_common(filename_user, "sys_execve", true);
 }
 
 // the call from execve_handler_pre won't provided correct value for __never_use_argument, use them after fix execve_handler_pre, keeping them for consistence for manually patched code
@@ -136,17 +163,9 @@ int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
 				 int *__never_use_flags)
 {
 	struct filename *filename;
+	const char sh[] = KSUD_PATH;
 
-	if (unlikely(!filename_ptr))
-		return 0;
-
-#ifndef CONFIG_KSU_KPROBES_HOOK
-	if (!ksu_sucompat_non_kp) {
-		return 0;
-	}
-#endif
-
-	if (!ksu_is_allow_uid(current_uid().val))
+	if (!is_su_allowed((const void *)filename_ptr))
 		return 0;
 
 	filename = *filename_ptr;
@@ -158,18 +177,11 @@ int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
 		return 0;
 
 	pr_info("do_execveat_common su found\n");
-	memcpy((void *)filename->name, ksud_path, sizeof(ksud_path));
+	memcpy((void *)filename->name, sh, sizeof(sh));
 
 	ksu_escape_to_root();
 
 	return 0;
-}
-
-int ksu_handle_execve_sucompat(int *fd, const char __user **filename_user,
-			       void *__never_use_argv, void *__never_use_envp,
-			       int *__never_use_flags)
-{
-	return ksu_sucompat_common(filename_user, "sys_execve", true);
 }
 
 int ksu_handle_devpts(struct inode *inode)
