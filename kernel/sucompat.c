@@ -64,8 +64,10 @@ static char __user *ksud_user_path(void)
 __attribute__((hot, no_stack_protector))
 static __always_inline bool is_su_allowed(const void *ptr_to_check)
 {
+#ifndef CONFIG_KSU_SUSFS_SUS_SU
         if (likely(!ksu_is_allow_uid(current_uid().val)))
                 return false;
+#endif
 
         if (unlikely(!ptr_to_check))
                 return false;
@@ -119,10 +121,6 @@ struct filename* susfs_ksu_handle_stat(int *dfd, const char __user **filename_us
 	struct filename *name = getname_flags(*filename_user, getname_statx_lookup_flags(*flags), NULL);
 
 	if (unlikely(IS_ERR(name) || name->name == NULL)) {
-		return name;
-	}
-
-	if (!ksu_is_allow_uid(current_uid().val)) {
 		return name;
 	}
 
