@@ -70,9 +70,8 @@ static __always_inline bool is_su_allowed(const void *ptr_to_check)
                 return false;
 
 #ifndef CONFIG_KSU_KPROBES_HOOK
-        if (!ksu_sucompat_non_kp) {
+        if (unlikely(!ksu_sucompat_non_kp))
                 return false;
-	}
 #endif
 
         return true;
