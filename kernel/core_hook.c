@@ -1171,7 +1171,7 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 		//   the detection, really big helps here!
 		else if (new_uid.val >= 90000 && new_uid.val < 1000000 && susfs_is_umount_for_zygote_iso_service_enabled) {
 			task_lock(current);
-			current->susfs_task_state |= TASK_STRUCT_NON_ROOT_USER_APP_PROC;
+			susfs_set_current_non_root_user_app_proc();
 			task_unlock(current);
 			goto out_susfs_try_umount_all;
 		}
@@ -1202,7 +1202,7 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 #ifdef CONFIG_KSU_SUSFS
 	else {
 		task_lock(current);
-		current->susfs_task_state |= TASK_STRUCT_NON_ROOT_USER_APP_PROC;
+		susfs_set_current_non_root_user_app_proc();
 		task_unlock(current);
 	}
 #endif
