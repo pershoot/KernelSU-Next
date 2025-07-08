@@ -1164,7 +1164,7 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 		        // set flag if zygote spawned system process is allowed for root access
 		        if (!ksu_is_allow_uid(new_uid.val)) {
 			        task_lock(current);
-			        susfs_set_current_proc_root_not_allowed();
+				susfs_set_current_proc_su_not_allowed();
 			        task_unlock(current);
 		        }
 #endif // #ifdef CONFIG_KSU_SUSFS_SUS_SU
@@ -1184,20 +1184,17 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 		// - Kudos to ThePedroo, the author and maintainer of Rezygisk for finding and reporting
 		//   the detection, really big helps here!
 		else if (new_uid.val >= 90000 && new_uid.val < 1000000) {
+			task_lock(current);
+			susfs_set_current_non_root_user_app_proc();
+#ifdef CONFIG_KSU_SUSFS_SUS_SU
+			susfs_set_current_proc_su_not_allowed();
+#endif
+			task_unlock(current);
 #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
 			if (susfs_is_umount_for_zygote_iso_service_enabled) {
-				task_lock(current);
-				susfs_set_current_non_root_user_app_proc();
-				task_unlock(current);
 				goto out_susfs_try_umount_all;
 			}
 #endif // #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
-#ifdef CONFIG_KSU_SUSFS_SUS_SU
-			// We always don't allow root for iso services.
-			task_lock(current);
-			susfs_set_current_proc_root_not_allowed();
-			task_unlock(current);
-#endif // #ifdef CONFIG_KSU_SUSFS_SUS_SU
 		}
 	}
 #endif // #ifdef CONFIG_KSU_SUSFS
@@ -1228,7 +1225,7 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 		task_lock(current);
 		susfs_set_current_non_root_user_app_proc();
 #ifdef CONFIG_KSU_SUSFS_SUS_SU
-		susfs_set_current_proc_root_not_allowed();
+		susfs_set_current_proc_su_not_allowed();
 #endif // #ifdef CONFIG_KSU_SUSFS_SUS_SU
 		task_unlock(current);
 	}
