@@ -84,7 +84,11 @@ static int ksu_sucompat_user_common(const char __user **filename_user,
                                 const char *syscall_name,
                                 const bool escalate)
 {
+#ifdef CONFIG_KSU_SUSFS_SUS_SU
+        char path[sizeof(su)] = {0};
+#else
         char path[sizeof(su) + 1];
+#endif
         if (ksu_copy_from_user_retry(path, *filename_user, sizeof(path)))
                 return 0;
 
