@@ -64,6 +64,12 @@ static char __user *ksud_user_path(void)
 __attribute__((hot, no_stack_protector))
 static __always_inline bool is_su_allowed(const void *ptr_to_check)
 {
+        barrier();
+#ifndef CONFIG_KSU_KPROBES_HOOK
+        if (!ksu_sucompat_non_kp)
+                return false;
+#endif
+
 #ifndef CONFIG_KSU_SUSFS_SUS_SU
         if (likely(!ksu_is_allow_uid(current_uid().val)))
                 return false;
@@ -71,11 +77,6 @@ static __always_inline bool is_su_allowed(const void *ptr_to_check)
 
         if (unlikely(!ptr_to_check))
                 return false;
-
-#ifndef CONFIG_KSU_KPROBES_HOOK
-        if (unlikely(!ksu_sucompat_non_kp))
-                return false;
-#endif
 
         return true;
 }
@@ -87,7 +88,7 @@ static int ksu_sucompat_user_common(const char __user **filename_user,
 #ifdef CONFIG_KSU_SUSFS_SUS_SU
         char path[sizeof(su)] = {0};
 #else
-        char path[sizeof(su) + 1];
+        char path[sizeof(su)]; // sizeof includes nullterm already!
 #endif
         if (ksu_copy_from_user_retry(path, *filename_user, sizeof(path)))
                 return 0;
@@ -199,6 +200,7 @@ int ksu_handle_devpts(struct inode *inode)
 
 int __ksu_handle_devpts(struct inode *inode)
 {
+        barrier();
 #ifndef CONFIG_KSU_KPROBES_HOOK
 	if (!ksu_sucompat_non_kp) {
 		return 0;
