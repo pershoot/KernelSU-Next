@@ -278,7 +278,7 @@ void ksu_escape_to_root(void)
 	ksu_setup_selinux(profile->selinux_domain);
 }
 
-int ksu_handle_rename(struct dentry *old_dentry, struct dentry *new_dentry)
+LSM_HANDLER_TYPE ksu_handle_rename(struct dentry *old_dentry, struct dentry *new_dentry)
 {
 	if (!current->mm) {
 		// skip kernel threads
@@ -365,7 +365,7 @@ static bool is_system_bin_su(void)
     return false;
 }
 
-int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
+LSM_HANDLER_TYPE ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		     unsigned long arg4, unsigned long arg5)
 {
 	// if success, we modify the arg5 as result!
@@ -1132,7 +1132,7 @@ void susfs_try_umount_all(uid_t uid) {
 }
 #endif
 
-int ksu_handle_setuid(struct cred *new, const struct cred *old)
+LSM_HANDLER_TYPE ksu_handle_setuid(struct cred *new, const struct cred *old)
 {
 	// this hook is used for umounting overlayfs for some uid, if there isn't any module mounted, just ignore it!
 	if (!ksu_module_mounted) {
@@ -1365,7 +1365,7 @@ __maybe_unused int ksu_kprobe_exit(void)
 
 extern int ksu_handle_devpts(struct inode *inode); // sucompat.c
 
-int ksu_inode_permission(struct inode *inode, int mask)
+LSM_HANDLER_TYPE ksu_inode_permission(struct inode *inode, int mask)
 {
 	if (inode && inode->i_sb
 		&& unlikely(inode->i_sb->s_magic == DEVPTS_SUPER_MAGIC)) {
@@ -1377,7 +1377,7 @@ int ksu_inode_permission(struct inode *inode, int mask)
 
 // kernel 4.9 and older
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0) || defined(CONFIG_IS_HW_HISI) || defined(CONFIG_KSU_ALLOWLIST_WORKAROUND)
-int ksu_key_permission(key_ref_t key_ref, const struct cred *cred,
+LSM_HANDLER_TYPE ksu_key_permission(key_ref_t key_ref, const struct cred *cred,
 			      unsigned perm)
 {
 	if (init_session_keyring != NULL) {
