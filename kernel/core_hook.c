@@ -69,9 +69,12 @@ bool susfs_is_allow_su(void)
 
 extern u32 susfs_zygote_sid;
 extern bool susfs_is_mnt_devname_ksu(struct path *path);
+#ifdef CONFIG_KSU_SUSFS_SUS_PATH
+extern void susfs_run_sus_path_loop(uid_t uid);
+#endif // #ifdef CONFIG_KSU_SUSFS_SUS_PATH
 #ifdef CONFIG_KSU_SUSFS_ENABLE_LOG
 extern bool susfs_is_log_enabled __read_mostly;
-#endif
+#endif // #ifdef CONFIG_KSU_SUSFS_ENABLE_LOG
 #ifdef CONFIG_KSU_SUSFS_TRY_UMOUNT
 extern void susfs_run_try_umount_for_current_mnt_ns(void);
 #endif // #ifdef CONFIG_KSU_SUSFS_TRY_UMOUNT
@@ -614,6 +617,22 @@ LSM_HANDLER_TYPE ksu_handle_prctl(int option, unsigned long arg2, unsigned long 
 			}
 			error = susfs_add_sus_path((struct st_susfs_sus_path __user*)arg3);
 			pr_info("susfs: CMD_SUSFS_ADD_SUS_PATH -> ret: %d\n", error);
+			if (copy_to_user((void __user*)arg5, &error, sizeof(error)))
+				pr_info("susfs: copy_to_user() failed\n");
+			return 0;
+		}
+		if (arg2 == CMD_SUSFS_ADD_SUS_PATH_LOOP) {
+			int error = 0;
+			if (!ksu_access_ok((void __user*)arg3, sizeof(struct st_susfs_sus_path))) {
+				pr_err("susfs: CMD_SUSFS_ADD_SUS_PATH_LOOP -> arg3 is not accessible\n");
+				return 0;
+			}
+			if (!ksu_access_ok((void __user*)arg5, sizeof(error))) {
+				pr_err("susfs: CMD_SUSFS_ADD_SUS_PATH_LOOP -> arg5 is not accessible\n");
+				return 0;
+			}
+			error = susfs_add_sus_path_loop((struct st_susfs_sus_path __user*)arg3);
+			pr_info("susfs: CMD_SUSFS_ADD_SUS_PATH_LOOP -> ret: %d\n", error);
 			if (copy_to_user((void __user*)arg5, &error, sizeof(error)))
 				pr_info("susfs: copy_to_user() failed\n");
 			return 0;
@@ -1179,8 +1198,11 @@ LSM_HANDLER_TYPE ksu_handle_setuid(struct cred *new, const struct cred *old)
 			susfs_set_current_non_root_user_app_proc();
 #ifdef CONFIG_KSU_SUSFS_SUS_SU
 			susfs_set_current_proc_su_not_allowed();
-#endif
+#endif // #ifdef CONFIG_KSU_SUSFS_SUS_SU
 			task_unlock(current);
+#ifdef CONFIG_KSU_SUSFS_SUS_PATH
+			susfs_run_sus_path_loop(new_uid.val);
+#endif // #ifdef CONFIG_KSU_SUSFS_SUS_PATH
 #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
 			if (susfs_is_umount_for_zygote_iso_service_enabled) {
 				goto out_susfs_try_umount_all;
@@ -1219,6 +1241,9 @@ LSM_HANDLER_TYPE ksu_handle_setuid(struct cred *new, const struct cred *old)
 		susfs_set_current_proc_su_not_allowed();
 #endif // #ifdef CONFIG_KSU_SUSFS_SUS_SU
 		task_unlock(current);
+#ifdef CONFIG_KSU_SUSFS_SUS_PATH
+		susfs_run_sus_path_loop(new_uid.val);
+#endif // #ifdef CONFIG_KSU_SUSFS_SUS_PATH
 	}
 #endif // #ifdef CONFIG_KSU_SUSFS
 
