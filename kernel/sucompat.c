@@ -86,7 +86,7 @@ static int ksu_sucompat_user_common(const char __user **filename_user,
                                 const bool escalate)
 {
 #ifdef CONFIG_KSU_SUSFS_SUS_SU
-        char path[sizeof(su)] = {0};
+        char path[sizeof(su) + 1] = {0};
 #else
         char path[sizeof(su)]; // sizeof includes nullterm already!
 #endif
