@@ -38,18 +38,24 @@ perform_cleanup() {
 
 # Sets up or update KernelSU-Next environment
 setup_kernelsu() {
+    BRANCH="next-susfs"
     echo "[+] Setting up KernelSU-Next..."
     test -d "$GKI_ROOT/KernelSU-Next" || git clone https://github.com/pershoot/KernelSU-Next && echo "[+] Repository cloned."
     cd "$GKI_ROOT/KernelSU-Next"
     git stash && echo "[-] Stashed current changes."
     if [ "$(git status | grep -Po 'v\d+(\.\d+)*' | head -n1)" ]; then
-        git checkout next-susfs && echo "[-] Switched to next-susfs branch."
+        git checkout "$BRANCH" && echo "[-] Switched to $BRANCH branch."
     fi
     git pull && echo "[+] Repository updated."
     if [ -z "${1-}" ]; then
         git checkout "$(git describe --abbrev=0 --tags)" && echo "[-] Checked out latest tag."
     else
         git checkout "$1" && echo "[-] Checked out $1." || echo "[-] Checkout default branch"
+        if [ -z "${2-}" ]; then
+            echo "[-] Using manual hooks"
+        elif [[ "$2" = "kprobes" && "$(git symbolic-ref --short HEAD | grep -w ^$BRANCH$)" = "$BRANCH" ]]; then
+               git revert "$(git log --pretty=oneline | grep -w 'kernel: Switch to manual hooks in config$' | cut -f1 -d' ')" --no-edit && echo "[+] Switched to and using $2 hooking." || echo "[-] Using manual hooks"
+        fi
     fi
     cd "$DRIVER_DIR"
     ln -sf "$(realpath --relative-to="$DRIVER_DIR" "$GKI_ROOT/KernelSU-Next/kernel")" "kernelsu" && echo "[+] Symlink created."
