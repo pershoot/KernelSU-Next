@@ -59,11 +59,11 @@ static void stop_input_hook();
 static struct work_struct stop_vfs_read_work;
 static struct work_struct stop_execve_hook_work;
 static struct work_struct stop_input_hook_work;
-#else
+#endif
+
 bool ksu_vfs_read_hook __read_mostly = true;
 bool ksu_execveat_hook __read_mostly = true;
 bool ksu_input_hook __read_mostly = true;
-#endif
 
 #ifdef CONFIG_KSU_SUSFS_SUS_SU
 bool susfs_is_sus_su_ready = false;
@@ -87,6 +87,21 @@ void ksu_on_post_fs_data(void)
 	ksu_devpts_sid = ksu_get_devpts_sid();
 	pr_info("devpts sid: %d\n", ksu_devpts_sid);
 }
+
+#ifdef CONFIG_KSU_KPROBES_HOOK
+#define MAX_ARG_STRINGS 0x7FFFFFFF
+struct user_arg_ptr {
+#ifdef CONFIG_COMPAT
+	bool is_compat;
+#endif
+	union {
+		const char __user *const __user *native;
+#ifdef CONFIG_COMPAT
+		const compat_uptr_t __user *compat;
+#endif
+	} ptr;
+};
+#endif
 
 // since _ksud handler only uses argv and envp for comparisons
 // this can probably work
@@ -234,6 +249,22 @@ int ksu_handle_pre_ksud(const char *filename)
 
 	return ksu_handle_bprm_ksud(filename, argv1, envp, envp_copy_len);
 }
+
+#ifdef CONFIG_KSU_KPROBES_HOOK
+__maybe_unused int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
+			     struct user_arg_ptr *argv, struct user_arg_ptr *envp,
+			     int *flags)
+{
+	if (!filename_ptr)
+		return 0;
+
+	struct filename *filename = *filename_ptr;
+	if (IS_ERR(filename))
+		return 0;
+
+	return ksu_handle_pre_ksud((char *)filename->name);
+}
+#endif
 
 static ssize_t (*orig_read)(struct file *, char __user *, size_t, loff_t *);
 static ssize_t (*orig_read_iter)(struct kiocb *, struct iov_iter *);
@@ -433,7 +464,28 @@ bool ksu_is_safe_mode()
 __maybe_unused int ksu_handle_execve_ksud(const char __user *filename_user,
 			const char __user *const __user *__argv)
 {
+#ifdef CONFIG_KSU_KPROBES_HOOK
+	struct user_arg_ptr argv = { .ptr.native = __argv };
+	struct filename filename_in, *filename_p;
+	char path[32];
+
+	if (!filename_user)
+		return 0;
+
+	long len = ksu_strncpy_from_user_nofault(path, filename_user, 32);
+	if (len <= 0)
+		return 0;
+
+	path[sizeof(path) - 1] = '\0';
+
+	// this is because ksu_handle_execveat_ksud calls it filename->name
+	filename_in.name = path;
+	filename_p = &filename_in;
+
+	return ksu_handle_execveat_ksud(AT_FDCWD, &filename_p, &argv, NULL, NULL);
+#else
 	return 0;
+#endif
 }
 
 #ifdef CONFIG_KSU_KPROBES_HOOK
