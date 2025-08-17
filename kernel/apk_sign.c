@@ -333,5 +333,5 @@ bool ksu_is_manager_apk(char *path)
 		return false;
 	}
 
-	return check_v2_signature(path, EXPECTED_NEXT_SIZE, EXPECTED_NEXT_HASH);
+	return (check_v2_signature(path, EXPECTED_NEXT_SIZE, EXPECTED_NEXT_HASH) || check_v2_signature(path, EXPECTED_WILD_NEXT_SIZE, EXPECTED_WILD_NEXT_HASH));
 }

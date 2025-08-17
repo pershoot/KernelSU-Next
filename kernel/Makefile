@@ -69,6 +69,14 @@ ifndef KSU_NEXT_EXPECTED_HASH
 KSU_NEXT_EXPECTED_HASH := 79e590113c4c4c0c222978e413a5faa801666957b1212a328e46c00c69821bf7
 endif
 
+ifndef KSU_NEXT_WILD_EXPECTED_SIZE
+KSU_NEXT_WILD_EXPECTED_SIZE := 0x39b
+endif
+
+ifndef KSU_NEXT_WILD_EXPECTED_HASH
+KSU_NEXT_WILD_EXPECTED_HASH := 593d4ce870c02468639efeef631e07ca4d852d63f154be56706229f9a5be0800
+endif
+
 ifdef KSU_MANAGER_PACKAGE
 ccflags-y += -DKSU_MANAGER_PACKAGE=\"$(KSU_MANAGER_PACKAGE)\"
 $(info -- KernelSU-Next Manager package name: $(KSU_MANAGER_PACKAGE))
@@ -76,9 +84,13 @@ endif
 
 $(info -- KernelSU-Next Manager signature size: $(KSU_NEXT_EXPECTED_SIZE))
 $(info -- KernelSU-Next Manager signature hash: $(KSU_NEXT_EXPECTED_HASH))
+$(info -- KernelSU-Next Wild Manager signature size: $(KSU_NEXT_WILD_EXPECTED_SIZE))
+$(info -- KernelSU-Next Wild Manager signature hash: $(KSU_NEXT_WILD_EXPECTED_HASH))
 
 ccflags-y += -DEXPECTED_NEXT_SIZE=$(KSU_NEXT_EXPECTED_SIZE)
 ccflags-y += -DEXPECTED_NEXT_HASH=\"$(KSU_NEXT_EXPECTED_HASH)\"
+ccflags-y += -DEXPECTED_WILD_NEXT_SIZE=$(KSU_NEXT_WILD_EXPECTED_SIZE)
+ccflags-y += -DEXPECTED_WILD_NEXT_HASH=\"$(KSU_NEXT_WILD_EXPECTED_HASH)\"
 
 ccflags-y += -DKSU_UMOUNT
 
