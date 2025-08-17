@@ -40,9 +40,9 @@ perform_cleanup() {
 
 # Sets up or update KernelSU-Next environment
 setup_kernelsu() {
-    BRANCH="next-susfs"
+    BRANCH="shockwave"
     echo "[+] Setting up KernelSU-Next..."
-    test -d "$GKI_ROOT/KernelSU-Next" || git clone https://github.com/pershoot/KernelSU-Next && echo "[+] Repository cloned."
+    test -d "$GKI_ROOT/KernelSU-Next" || git clone https://github.com/MrShockWAVEog/KernelSU-Next && echo "[+] Repository cloned."
     cd "$GKI_ROOT/KernelSU-Next"
     git stash && echo "[-] Stashed current changes."
     if [ "$(git status | grep -Po 'v\d+(\.\d+)*' | head -n1)" ]; then
