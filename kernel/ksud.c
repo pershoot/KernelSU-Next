@@ -71,15 +71,15 @@ bool susfs_is_sus_su_ready = false;
 
 u32 ksu_devpts_sid;
 
-void ksu_on_post_fs_data(void)
+void on_post_fs_data(void)
 {
 	static bool done = false;
 	if (done) {
-		pr_info("ksu_on_post_fs_data already done\n");
+		pr_info("on_post_fs_data already done\n");
 		return;
 	}
 	done = true;
-	pr_info("ksu_on_post_fs_data!\n");
+	pr_info("on_post_fs_data!\n");
 	ksu_load_allow_list();
 	// sanity check, this may influence the performance
 	stop_input_hook();
@@ -136,7 +136,7 @@ static int ksu_handle_bprm_ksud(const char *filename, const char *argv1, const c
 		&& (!memcmp(filename, system_bin_init, sizeof(system_bin_init) - 1))) {
 		if (argv1 && !strcmp(argv1, "second_stage")) {
 			pr_info("%s: /system/bin/init second_stage executed\n", __func__);
-			ksu_apply_kernelsu_rules();
+			apply_kernelsu_rules();
 			init_second_stage_executed = true;
 			ksu_android_ns_fs_check();
 		}
@@ -147,7 +147,7 @@ static int ksu_handle_bprm_ksud(const char *filename, const char *argv1, const c
 		&& (!memcmp(filename, old_system_init, sizeof(old_system_init) - 1))) {
 		if (argv1 && !strcmp(argv1, "--second-stage")) {
 			pr_info("%s: /init --second-stage executed\n", __func__);
-			ksu_apply_kernelsu_rules();
+			apply_kernelsu_rules();
 			init_second_stage_executed = true;
 			ksu_android_ns_fs_check();
 		}
@@ -171,7 +171,7 @@ static int ksu_handle_bprm_ksud(const char *filename, const char *argv1, const c
 		if (!strcmp(envp_n, "INIT_SECOND_STAGE=1")
 			|| !strcmp(envp_n, "INIT_SECOND_STAGE=true") ) {
 			pr_info("%s: /init +envp: INIT_SECOND_STAGE executed\n", __func__);
-			ksu_apply_kernelsu_rules();
+			apply_kernelsu_rules();
 			init_second_stage_executed = true;
 			ksu_android_ns_fs_check();
 		}
@@ -181,7 +181,7 @@ first_app_process:
 	if (first_app_process && !memcmp(filename, app_process, sizeof(app_process) - 1)) {
 		first_app_process = false;
 		pr_info("%s: exec app_process, /data prepared, second_stage: %d\n", __func__, init_second_stage_executed);
-		ksu_on_post_fs_data();
+		on_post_fs_data();
 		stop_execve_hook();
 	}
 
