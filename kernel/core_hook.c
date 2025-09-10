@@ -1067,7 +1067,7 @@ static bool is_non_appuid(kuid_t uid)
 	return appid < FIRST_APPLICATION_UID;
 }
 
-static inline bool is_zygote_system_uid(uid_t uid)
+static inline bool is_some_system_uid(uid_t uid)
 {
         return uid >= 1000 && uid < 10000;
 }
@@ -1179,7 +1179,7 @@ LSM_HANDLER_TYPE ksu_handle_setuid(struct cred *new, const struct cred *old)
 
 #ifdef CONFIG_KSU_SUSFS
         bool is_zygote_child = susfs_is_sid_equal(old->security, susfs_zygote_sid);
-	if (is_zygote_system_uid(new_uid.val) && is_zygote_child) {
+	if (is_some_system_uid(new_uid.val) && is_zygote_child) {
 		if (ksu_is_allow_uid(new_uid.val)) {
 			return 0;
 		}
