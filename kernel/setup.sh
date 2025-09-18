@@ -45,7 +45,7 @@ setup_kernelsu() {
     test -d "$GKI_ROOT/KernelSU-Next" || git clone https://github.com/pershoot/KernelSU-Next && echo "[+] Repository cloned."
     cd "$GKI_ROOT/KernelSU-Next"
     git stash && echo "[-] Stashed current changes."
-    if [ "$(git status | grep -Po 'v\d+(\.\d+)*' | head -n1)" ]; then
+    if [ "$(git status | sed -n 's/.*\(v[0-9][0-9.]*\).*/\1/p' | head -n1)" ]; then
         git checkout "$BRANCH" && echo "[-] Switched to $BRANCH branch."
     fi
     git pull && echo "[+] Repository updated."
