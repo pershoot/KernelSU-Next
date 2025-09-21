@@ -26,7 +26,7 @@ config KSU_DEBUG
 
 config KSU_THRONE_TRACKER_ALWAYS_THREADED
 	bool "Always run throne_tracker in a kthread"
-	default n
+	default y
 	help
 	  Runs throne_tracker in a separate kthread, including the first run.
 	  Significantly decreases boot time, but can cause crowning failure
