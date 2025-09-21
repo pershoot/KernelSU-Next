@@ -220,39 +220,6 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 	return FILLDIR_ACTOR_CONTINUE;
 }
 
-/*
- * small helper to check if lock is held
- * false - file is stable
- * true - file is being deleted/renamed
- * possibly optional
- *
- */
-bool is_lock_held(const char *path) 
-{
-	struct path kpath;
-
-	// kern_path returns 0 on success
-	if (kern_path(path, 0, &kpath))
-		return true;
-
-	// just being defensive
-	if (!kpath.dentry) {
-		path_put(&kpath);
-		return true;
-	}
-
-	if (!spin_trylock(&kpath.dentry->d_lock)) {
-		pr_info("%s: lock held, bail out!\n", __func__);
-		path_put(&kpath);
-		return true;
-	}
-	// we hold it ourselves here!
-
-	spin_unlock(&kpath.dentry->d_lock);
-	path_put(&kpath);
-	return false;
-}
-
 // compat: https://elixir.bootlin.com/linux/v3.9/source/include/linux/fs.h#L771
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0)
 #define S_MAGIC_COMPAT(x) ((x)->f_inode->i_sb->s_magic)
