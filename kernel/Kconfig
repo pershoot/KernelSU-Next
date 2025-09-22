@@ -9,6 +9,15 @@ config KSU
 	  To compile as a module, choose M here: the
 	  module will be called kernelsu.
 
+config KSU_KPROBES_KSUD
+	bool "Enable dynamic kprobes for early boot"
+	depends on KPROBES
+	default y
+	help
+	  Use dynamic hooks via kprobes for functions needed only
+	  on early boot. Hooks are unregistered at boot complete
+	  to reduce overhead.
+
 config KSU_DEBUG
 	bool "KernelSU debug mode"
 	depends on KSU
