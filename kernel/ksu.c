@@ -5,7 +5,6 @@
 #include <linux/workqueue.h>
 
 #include "allowlist.h"
-#include "arch.h"
 #include "core_hook.h"
 #include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
@@ -21,11 +20,6 @@ bool ksu_queue_work(struct work_struct *work)
 {
 	return queue_work(ksu_workqueue, work);
 }
-
-extern void ksu_sucompat_init();
-extern void ksu_sucompat_exit();
-extern void ksu_ksud_init();
-extern void ksu_ksud_exit();
 
 int __init kernelsu_init(void)
 {
@@ -51,13 +45,6 @@ int __init kernelsu_init(void)
 
 	ksu_throne_tracker_init();
 
-#ifdef CONFIG_KSU_KPROBES_HOOK
-	ksu_sucompat_init();
-	ksu_ksud_init();
-#else
-	pr_alert("KPROBES is disabled, KernelSU may not work, please check https://kernelsu.org/guide/how-to-integrate-for-non-gki.html");
-#endif
-
 #ifdef MODULE
 #ifndef CONFIG_KSU_DEBUG
 	kobject_del(&THIS_MODULE->mkobj.kobj);
@@ -73,13 +60,6 @@ void kernelsu_exit(void)
 	ksu_throne_tracker_exit();
 
 	destroy_workqueue(ksu_workqueue);
-
-#ifdef CONFIG_KSU_KPROBES_HOOK
-	ksu_ksud_exit();
-	ksu_sucompat_exit();
-#endif
-
-	ksu_core_exit();
 }
 
 module_init(kernelsu_init);

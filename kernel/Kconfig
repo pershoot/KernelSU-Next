@@ -9,14 +9,6 @@ config KSU
 	  To compile as a module, choose M here: the
 	  module will be called kernelsu.
 
-config KSU_KPROBES_HOOK
-	bool "Use kprobes for kernelsu"
-	depends on KSU
-	depends on KPROBES
-	default n
-	help
-	  Disable if you use manual hooks.
-
 config KSU_DEBUG
 	bool "KernelSU debug mode"
 	depends on KSU
@@ -173,7 +165,7 @@ config KSU_SUSFS_OPEN_REDIRECT
 
 config KSU_SUSFS_SUS_SU
     bool "Enable SUS-SU in runtime temporarily"
-    depends on KSU_SUSFS && KPROBES && HAVE_KPROBES && KPROBE_EVENTS && KSU_KPROBES_HOOK
+    depends on KSU_SUSFS && KPROBES && HAVE_KPROBES && KPROBE_EVENTS
     default n
     help
       - Allow user to enable or disable core ksu kprobes hooks temporarily in runtime. There are 2 working modes for sus_su.
