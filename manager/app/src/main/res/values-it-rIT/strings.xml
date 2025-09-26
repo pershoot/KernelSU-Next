@@ -20,7 +20,7 @@
   <string name="home_failure">Firma v2 di KernelSU Next non trovata nel kernel! [ !KSU_NEXT || != size/hash ]</string>
   <string name="home_failure_tip">Chiedi allo sviluppatore del kernel d\'integrare KernelSU Next!</string>
   <string name="home_kernel">Versione kernel</string>
-  <string name="hook_mode">Modalità Hook</string>
+  <string name="hook_mode">Modalità hook</string>
   <string name="enable">Abilita</string>
   <string name="disable">Disabilita</string>
   <string name="enabled">Abilitato</string>
@@ -30,7 +30,7 @@
   <string name="home_susfs_version">Versione SuSFS</string>
   <string name="home_susfs_sus_su">SuS SU</string>
   <string name="home_android">Versione Android</string>
-  <string name="home_manager_version">Versione Manager</string>
+  <string name="home_manager_version">Versione manager</string>
   <string name="home_abi">ABI</string>
   <string name="home_selinux_status">Stato SELinux</string>
   <string name="selinux_status_disabled">Disabilitato</string>
@@ -103,7 +103,7 @@
   <string name="proceed">Procedi</string>
   <string name="cancel">Annulla</string>
   <string name="later">Più tardi</string>
-  <string name="lkm_warning_message">La patch LKM si basa su codici vuoi continuare?</string>
+  <string name="lkm_warning_message">La patch LKM si basa su componenti closed source. Vuoi continuare?</string>
   <string name="home_next_kernelsu">🔥 Prossima build</string>
   <string name="home_next_kernelsu_repo">https://github.com/KernelSU-Next/KernelSU-Next</string>
   <string name="home_next_kernelsu_body">Prossimo branch sperimentale. Provalo su GitHub!</string>
@@ -176,8 +176,8 @@
   <string name="app_profile_template_import_empty">Gli appunti sono vuoti!</string>
   <string name="module_changelog_failed">Recupero del changelog non riuscito: %s</string>
   <string name="settings_check_update">Controlla aggiornamenti</string>
-  <string name="settings_check_update_summary">Cerca automaticamente gli aggiornamenti all\'apertura dell\'applicazione.</string>
-  <string name="grant_root_failed">Impossibile concedere i permessi root! </string>
+  <string name="settings_check_update_summary">Cerca automaticamente gli aggiornamenti all\'apertura dell\'applicazione</string>
+  <string name="grant_root_failed">Impossibile concedere i permessi root!</string>
   <string name="action">Azione</string>
   <string name="webui">WebUI</string>
   <string name="open">Apri</string>
@@ -191,14 +191,11 @@
   <string name="select_file_tip">Immagine partizione %1$s consigliata</string>
   <string name="select_kmi">Seleziona KMI</string>
   <string name="shrink_sparse_image">Minimizza l\'immagine sparsa</string>
-  <string name="shrink_sparse_image_message">Ridimensiona l\'immagine sparsa in cui si trova il modulo alla sua dimensione effettiva. Nota che ciò potrebbe causare un funzionamento anomalo del modulo, quindi utilizzalo solo se necessario (ad esempio per eseguire un backup).</string>
   <string name="settings_uninstall">Disinstalla</string>
   <string name="settings_uninstall_temporary">Disinstalla temporaneamente</string>
   <string name="settings_uninstall_permanent">Disinstalla permanentemente</string>
   <string name="settings_restore_stock_image">Ripristina l\'immagine originale</string>
   <string name="settings_uninstall_temporary_message">Disinstalla temporaneamente KernelSU Next e recupera il suo stato originale dopo il prossimo riavvio.</string>
-  <string name="settings_uninstall_permanent_message">Disinstalla KernelSU Next (i permessi di root e tutti i moduli) completamente e permanentemente.</string>
-  <string name="settings_restore_stock_image_message">Ripristina l\'immagine del sistema originale (se un backup esiste), che viene solitamente utilizzata prima di un aggiornamento OTA; se vuoi disinstallare KernelSU Next, utlizza \"Disinstalla permanentemente\".</string>
   <string name="flashing">Installazione in corso</string>
   <string name="flash_success">Installazione completata</string>
   <string name="flash_failed">Installazione fallita</string>
@@ -207,7 +204,6 @@
   <string name="log_saved">Log salvati</string>
   <string name="send_log">Condividi i log</string>
   <string name="settings_disable_su">Disattiva la compatibilità su</string>
-  <string name="settings_disable_su_summary">Disattiva temporaneamente la capacità di ogni applicazione di ottenere i permessi root tramite il comando su (le sessioni di root esistenti non subiranno modifiche).</string>
   <string name="settings_language">Lingua</string>
   <string name="system_default">Default di sistema</string>
   <string name="settings_legacyui">Usa lo stile d\'interfaccia precedente</string>
@@ -231,6 +227,10 @@
   <string name="module_sort_enabled_first">Ordina (prima Abilitato)</string>
   <string name="module_sort_action_first">Ordina (prima Azione)</string>
   <string name="module_sort_webui_first">Ordina (prima WebUI)</string>
-  <string name="settings_global_namespace_mode">Modalità Namespace globale</string>
   <string name="settings_global_namespace_mode_summary">Tutte le sessioni root usano lo spazio di montaggio globale</string>
+  <string name="shrink_sparse_image_message">Ridimensiona l\'immagine sparse in cui si trova il modulo alle sue dimensioni reali. Tieni presente che questo potrebbe causare un funzionamento anomalo del modulo, quindi utilizzalo solo quando necessario (ad esempio per il backup).</string>
+  <string name="settings_uninstall_permanent_message">Disinstallazione completa e permanente di KernelSU Next (root e tutti i moduli).</string>
+  <string name="settings_restore_stock_image_message">Ripristinare l\'immagine di fabbrica (se esiste un backup), solitamente utilizzata prima dell\'OTA; se è necessario disinstallare KernelSU Next, utilizzare \"Disinstalla definitivamente\".</string>
+  <string name="settings_disable_su_summary">Disattiva temporaneamente la possibilità per qualsiasi app di ottenere privilegi di root tramite il comando ⁠su (i processi di root esistenti non saranno interessati).</string>
+  <string name="settings_global_namespace_mode">Modalità Namespace globale</string>
 </resources>

@@ -1,5 +1,4 @@
-**Languages**:  
-[English](README.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [Türkçe](README_TR.md) | [Português (Brasil)](README_PT-BR.md) | [한국어](README_KO.md) | [Français](README_FR.md) | [Bahasa Indonesia](README_ID.md) | [Русский](README_RU.md) | **Українська** | [ภาษาไทย](README_TH.md) | [Tiếng Việt](README_VI.md) | [Italiano](README_IT.md) | [Polski](README_PL.md) | [Български](README_BG.md) | [日本語](README_JA.md)
+[English](README.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [Türkçe](README_TR.md) | [Português (Brasil)](README_PT-BR.md) | [한국어](README_KO.md) | [Français](README_FR.md) | [Bahasa Indonesia](README_ID.md) | [Русский](README_RU.md) | **Українська** | [ภาษาไทย](README_TH.md) | [Tiếng Việt](README_VI.md) | [Italiano](README_IT.md) | [Polski](README_PL.md) | [Български](README_BG.md) | [日本語](README_JA.md) | [Español](README_ES.md)
 
 ---
 
@@ -22,6 +21,7 @@
     <a href="/LICENSE">
       <img src="https://img.shields.io/github/license/KernelSU-Next/KernelSU-Next?logo=gnu" alt="GitHub License">
     </a>
+    <a title="Crowdin" target="_blank" href="https://crowdin.com/project/kernelsu-next"><img src="https://badges.crowdin.net/kernelsu-next/localized.svg"></a>
   </p>
 </div>
 
@@ -37,13 +37,13 @@
 
 ## ✅ Сумісність
 
-KernelSU Next підтримує ядра Android від **4.4 до 6.6**:
+KernelSU Next підтримує ядра Android від **4.4 до 6.6**.
 
 | Версія ядра          | Примітки підтримки                                                                        |
 |----------------------|-------------------------------------------------------------------------------------------|
 | 5.10+ (GKI 2.0)      | Підтримує попередньо створені образи та LKM/KMI                                           |
 | 4.19 – 5.4 (GKI 1.0) | Потрібен вбудований драйвер KernelSU                                                      |
-| <4.14 (EOL)          | Потрібен драйвер KernelSU (версія 3.18+ є експериментальною, може знадобитися портування) |
+| < 4.14 (EOL)         | Потрібен драйвер KernelSU (версія 3.18+ є експериментальною, може знадобитися портування) |
 
 **Підтримувані архітектури:** `arm64-v8a`, `armeabi-v7a`, `x86_64`
 
@@ -55,7 +55,7 @@ KernelSU Next підтримує ядра Android від **4.4 до 6.6**:
 
 ---
 
-## 🔐 Безпека
+## 🏅 Безпека
 
 Щоб повідомити про проблеми безпеки, див [SECURITY.md](/SECURITY.md).
 
@@ -63,8 +63,8 @@ KernelSU Next підтримує ядра Android від **4.4 до 6.6**:
 
 ## 📜 Ліцензія
 
-- **Каталог `/kernel`:** [GPL-2.0-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
-- **Усі інші файли:** [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html)
+- **Каталог `/kernel`:** [GPL-2.0-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
+- **Усі інші файли:** [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html).
 
 ---
 
@@ -74,6 +74,7 @@ KernelSU Next підтримує ядра Android від **4.4 до 6.6**:
 
 - **USDT (BEP20, ERC20)**: `0x12b5224b7aca0121c2f003240a901e1d064371c1`
 - **USDT (TRC20)**: `TYUVMWGTcnR5svnDoX85DWHyqUAeyQcdjh`
+- **USDT (SOL)**: `A4wqBXYd6Ey4nK4SJ2bmjeMgGyaLKT9TwDLh8BEo8Zu6`
 - **ETH (ERC20)**: `0x12b5224b7aca0121c2f003240a901e1d064371c1`
 - **LTC**: `Ld238uYBuRQdZB5YwdbkuU6ektBAAUByoL`
 - **BTC**: `19QgifcjMjSr1wB2DJcea5cxitvWVcXMT6`

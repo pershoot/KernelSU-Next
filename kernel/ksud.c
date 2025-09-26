@@ -117,9 +117,11 @@ static int ksu_handle_bprm_ksud(const char *filename, const char *argv1, const c
 	static const char old_system_init[] = "/init";
 	static bool init_second_stage_executed = false;
 
+#ifndef CONFIG_KSU_KPROBES_HOOK
 	// return early when disabled
 	if (!ksu_execveat_hook)
 		return 0;
+#endif
 
 	if (!filename)
 		return 0;
@@ -189,8 +191,10 @@ first_app_process:
 
 int ksu_handle_pre_ksud(const char *filename)
 {
+#ifndef CONFIG_KSU_KPROBES_HOOK
 	if (likely(!ksu_execveat_hook))
 		return 0;
+#endif
 
 	// not /system/bin/init, not /init, not /system/bin/app_process (64/32 thingy)
 	// return 0;
@@ -249,6 +253,22 @@ int ksu_handle_pre_ksud(const char *filename)
 
 	return ksu_handle_bprm_ksud(filename, argv1, envp, envp_copy_len);
 }
+
+#ifdef CONFIG_KSU_KPROBES_HOOK
+__maybe_unused int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
+			    struct user_arg_ptr *argv, struct user_arg_ptr *envp,
+			    int *flags)
+{
+	if (!filename_ptr)
+		return 0;
+
+	struct filename *filename = *filename_ptr;
+	if (IS_ERR(filename))
+		return 0;
+
+	return ksu_handle_pre_ksud((char *)filename->name);
+}
+#endif
 
 #ifdef CONFIG_KSU_KPROBES_HOOK
 __maybe_unused int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,

@@ -13,9 +13,13 @@
 #include "throne_tracker.h"
 #include "kernel_compat.h"
 
+#include <linux/kthread.h>
+#include <linux/sched.h>
+
 uid_t ksu_manager_uid = KSU_INVALID_UID;
 
-#define SYSTEM_PACKAGES_LIST_PATH "/data/system/packages.list.tmp"
+static struct task_struct *throne_thread;
+#define SYSTEM_PACKAGES_LIST_PATH "/data/system/packages.list"
 
 struct uid_data {
 	struct list_head list;
@@ -216,39 +220,6 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 	return FILLDIR_ACTOR_CONTINUE;
 }
 
-/*
- * small helper to check if lock is held
- * false - file is stable
- * true - file is being deleted/renamed
- * possibly optional
- *
- */
-bool is_lock_held(const char *path) 
-{
-	struct path kpath;
-
-	// kern_path returns 0 on success
-	if (kern_path(path, 0, &kpath))
-		return true;
-
-	// just being defensive
-	if (!kpath.dentry) {
-		path_put(&kpath);
-		return true;
-	}
-
-	if (!spin_trylock(&kpath.dentry->d_lock)) {
-		pr_info("%s: lock held, bail out!\n", __func__);
-		path_put(&kpath);
-		return true;
-	}
-	// we hold it ourselves here!
-
-	spin_unlock(&kpath.dentry->d_lock);
-	path_put(&kpath);
-	return false;
-}
-
 // compat: https://elixir.bootlin.com/linux/v3.9/source/include/linux/fs.h#L771
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0)
 #define S_MAGIC_COMPAT(x) ((x)->f_inode->i_sb->s_magic)
@@ -292,7 +263,7 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
 			struct file *file;
 
 			if (!stop) {
-				file = ksu_filp_open_compat(pos->dirpath, O_RDONLY | O_NOFOLLOW, 0);
+				file = ksu_filp_open_compat(pos->dirpath, O_RDONLY | O_NOFOLLOW | O_DIRECTORY, 0);
 				if (IS_ERR(file)) {
 					pr_err("Failed to open directory: %s, err: %ld\n", pos->dirpath, PTR_ERR(file));
 					goto skip_iterate;
@@ -351,7 +322,7 @@ static bool is_uid_exist(uid_t uid, char *package, void *data)
 	return exist;
 }
 
-void track_throne()
+static void track_throne_function()
 {
 	struct file *fp;
 	int tries = 0;
@@ -455,6 +426,37 @@ out:
 	list_for_each_entry_safe (np, n, &uid_list, list) {
 		list_del(&np->list);
 		kfree(np);
+	}
+}
+
+static int throne_tracker_thread(void *data)
+{
+	pr_info("%s: pid: %d started\n", __func__, current->pid);
+	track_throne_function();
+	throne_thread = NULL;
+	smp_mb();
+	pr_info("%s: pid: %d exit!\n", __func__, current->pid);
+	return 0;
+}
+
+void track_throne()
+{
+#ifndef CONFIG_KSU_THRONE_TRACKER_ALWAYS_THREADED
+	static bool throne_tracker_first_run __read_mostly = true;
+	if (unlikely(throne_tracker_first_run)) {
+		track_throne_function();
+		throne_tracker_first_run = false;
+		return;
+	}
+#endif
+	smp_mb();
+	if (throne_thread != NULL) // single instance lock
+		return;
+
+	throne_thread = kthread_run(throne_tracker_thread, NULL, "throne_tracker");
+	if (IS_ERR(throne_thread)) {
+		throne_thread = NULL;
+		return;
 	}
 }
 

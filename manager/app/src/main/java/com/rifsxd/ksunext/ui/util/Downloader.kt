@@ -11,6 +11,7 @@ import android.os.Environment
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import com.rifsxd.ksunext.ksuApp
 import com.rifsxd.ksunext.ui.util.module.LatestVersionInfo
 
@@ -42,14 +43,14 @@ fun download(
                     onDownloading()
                     return
                 } else if (status == DownloadManager.STATUS_SUCCESSFUL) {
-                    onDownloaded(Uri.parse(localUri))
+                    onDownloaded(localUri.toUri())
                     return
                 }
             }
         }
     }
 
-    val request = DownloadManager.Request(Uri.parse(url))
+    val request = DownloadManager.Request(url.toUri())
         .setDestinationInExternalPublicDir(
             Environment.DIRECTORY_DOWNLOADS,
             fileName
@@ -78,12 +79,18 @@ fun checkNewVersion(): LatestVersionInfo {
                 val changelog = json.optString("body")
 
                 val assets = json.getJSONArray("assets")
+                val pkgId = ksuApp.applicationContext.packageName
                 for (i in 0 until assets.length()) {
                     val asset = assets.getJSONObject(i)
                     val name = asset.getString("name")
-                    if (!name.endsWith(".apk")) {
-                        continue
+                    val isApk = name.endsWith(".apk")
+                    val isSpoofed = name.contains("spoofed", ignoreCase = true)
+                    val shouldDownload = if (pkgId == "com.rifsxd.ksunext") {
+                        isApk && !isSpoofed
+                    } else {
+                        isApk && isSpoofed
                     }
+                    if (!shouldDownload) continue
 
                     val regex = Regex("v(.+?)_(\\d+)-")
                     val matchResult = regex.find(name) ?: continue
@@ -125,7 +132,7 @@ fun DownloadListener(context: Context, onDownloaded: (Uri) -> Unit) {
                             val uri = cursor.getString(
                                 cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI)
                             )
-                            onDownloaded(Uri.parse(uri))
+                            onDownloaded(uri.toUri())
                         }
                     }
                 }
