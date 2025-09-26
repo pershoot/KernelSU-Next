@@ -16,11 +16,6 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags);
 int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
 			size_t *count_ptr, loff_t **pos);
 
-#ifdef CONFIG_KSU_KPROBES_HOOK // For ksud and sucompat
-int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv,
-			void *envp, int *flags);
-#endif
-
 // For volume button
 int ksu_handle_input_handle_event(unsigned int *type, unsigned int *code, 
 				  int *value);

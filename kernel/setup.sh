@@ -53,11 +53,6 @@ setup_kernelsu() {
         git checkout "$(git describe --abbrev=0 --tags)" && echo "[-] Checked out latest tag."
     else
         git checkout "$1" && echo "[-] Checked out $1." || echo "[-] Checkout default branch"
-        if [ -z "${2-}" ]; then
-            echo "[-] Using manual hooks"
-        elif [[ "$2" = "kprobes" && "$(git symbolic-ref --short HEAD | grep -w ^$BRANCH$)" = "$BRANCH" ]]; then
-               git revert "$(git log --pretty=oneline | grep -w 'kernel: Switch to manual hooks in config$' | cut -f1 -d' ')" --no-edit && echo "[+] Switched to and using $2 hooking." || echo "[-] Using manual hooks"
-        fi
     fi
     cd "$DRIVER_DIR"
     ln -sf "$(realpath --relative-to="$DRIVER_DIR" "$GKI_ROOT/KernelSU-Next/kernel")" "kernelsu" && echo "[+] Symlink created."
