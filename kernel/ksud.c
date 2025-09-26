@@ -102,10 +102,9 @@ int ksu_handle_bprm_ksud(const char *filename, const char *argv1, const char *en
 	static const char old_system_init[] = "/init";
 	static bool init_second_stage_executed = false;
 
-#ifndef CONFIG_KSU_KPROBES_HOOK
+	// return early when disabled
 	if (!ksu_execveat_hook)
 		return 0;
-#endif
 
 	if (!filename)
 		return 0;
@@ -188,10 +187,8 @@ first_app_process:
 
 int ksu_handle_pre_ksud(const char *filename)
 {
-#ifndef CONFIG_KSU_KPROBES_HOOK
 	if (likely(!ksu_execveat_hook))
 		return 0;
-#endif
 
 	// not /system/bin/init, not /init, not /system/bin/app_process (64/32 thingy)
 	// return 0;
