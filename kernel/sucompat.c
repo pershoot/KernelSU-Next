@@ -151,6 +151,19 @@ int ksu_handle_execve_sucompat(int *fd, const char __user **filename_user,
         return ksu_sucompat_user_common(filename_user, "sys_execve", true);
 }
 
+// vfs_statx for 5.18+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 18, 0)
+int ksu_handle_vfs_statx(void *__never_use_dfd, struct filename **filename_ptr,
+			void *__never_use_flags, void **__never_use_stat,
+			void *__never_use_request_mask)
+{
+	if (!is_su_allowed((const void *)filename_ptr))
+		return 0;
+
+	return ksu_sucompat_user_common((void *)(*filename_ptr)->name, "vfs_statx", false);
+}
+#endif
+
 // the call from execve_handler_pre won't provided correct value for __never_use_argument, use them after fix execve_handler_pre, keeping them for consistence for manually patched code
 int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
 				 void *__never_use_argv, void *__never_use_envp,
