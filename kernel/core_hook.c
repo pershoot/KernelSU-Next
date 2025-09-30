@@ -69,6 +69,7 @@ extern bool susfs_is_log_enabled __read_mostly;
 #endif // #ifdef CONFIG_KSU_SUSFS_ENABLE_LOG
 #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
 static bool susfs_is_umount_for_zygote_system_process_enabled = false;
+static bool susfs_is_umount_for_zygote_iso_service_enabled = false;
 extern bool susfs_hide_sus_mnts_for_all_procs;
 //extern void susfs_reorder_mnt_id(void);
 #endif // #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
@@ -716,6 +717,18 @@ LSM_HANDLER_TYPE ksu_handle_prctl(int option, unsigned long arg2, unsigned long 
 				pr_info("susfs: copy_to_user() failed\n");
 			return 0;
 		}
+		if (arg2 == CMD_SUSFS_UMOUNT_FOR_ZYGOTE_ISO_SERVICE) {
+			int error = 0;
+			if (arg3 != 0 && arg3 != 1) {
+				pr_err("susfs: CMD_SUSFS_UMOUNT_FOR_ZYGOTE_ISO_SERVICE -> arg3 can only be 0 or 1\n");
+				return 0;
+			}
+			susfs_is_umount_for_zygote_iso_service_enabled = arg3;
+			pr_info("susfs: CMD_SUSFS_UMOUNT_FOR_ZYGOTE_ISO_SERVICE -> susfs_is_umount_for_zygote_iso_service_enabled: %lu\n", arg3);
+			if (copy_to_user((void __user*)arg5, &error, sizeof(error)))
+				pr_info("susfs: copy_to_user() failed\n");
+			return 0;
+		}
 #endif //#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
 #ifdef CONFIG_KSU_SUSFS_SUS_KSTAT
 		if (arg2 == CMD_SUSFS_ADD_SUS_KSTAT) {
@@ -1180,7 +1193,7 @@ LSM_HANDLER_TYPE ksu_handle_setuid(struct cred *new, const struct cred *old)
        }
 
        // Check if spawned process is isolated service first, and force to do umount if so
-       if (is_zygote_isolated_service_uid(new_uid.val)) {
+       if (is_zygote_isolated_service_uid(new_uid.val) && susfs_is_umount_for_zygote_iso_service_enabled) {
                goto do_umount;
        }
 
