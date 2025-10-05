@@ -71,7 +71,7 @@ extern bool susfs_is_log_enabled __read_mostly;
 static bool susfs_is_umount_for_zygote_system_process_enabled = false;
 static bool susfs_is_umount_for_zygote_iso_service_enabled = false;
 extern bool susfs_hide_sus_mnts_for_all_procs;
-extern void susfs_reorder_mnt_id(void);
+//extern void susfs_reorder_mnt_id(void);
 #endif // #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
 #ifdef CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT
 extern bool susfs_is_auto_add_sus_bind_mount_enabled;
