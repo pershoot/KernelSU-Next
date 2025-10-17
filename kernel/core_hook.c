@@ -981,6 +981,24 @@ LSM_HANDLER_TYPE ksu_handle_prctl(int option, unsigned long arg2, unsigned long 
 			return 0;
 		}
 #endif // #ifdef CONFIG_KSU_SUSFS_SUS_SU
+#ifdef CONFIG_KSU_SUSFS_SUS_MAP
+		if (arg2 == CMD_SUSFS_ADD_SUS_MAP) {
+			int error = 0;
+			if (!ksu_access_ok((void __user*)arg3, sizeof(struct st_susfs_sus_map))) {
+					pr_err("susfs: CMD_SUSFS_ADD_SUS_MAP -> arg3 is not accessible\n");
+					return 0;
+			}
+			if (!ksu_access_ok((void __user*)arg5, sizeof(error))) {
+					pr_err("susfs: CMD_SUSFS_ADD_SUS_MAP -> arg5 is not accessible\n");
+					return 0;
+			}
+			error = susfs_add_sus_map((struct st_susfs_sus_map __user*)arg3);
+			pr_info("susfs: CMD_SUSFS_ADD_SUS_MAP -> ret: %d\n", error);
+			if (copy_to_user((void __user*)arg5, &error, sizeof(error)))
+					pr_info("susfs: copy_to_user() failed\n");
+			return 0;
+		}
+#endif // #ifdef CONFIG_KSU_SUSFS_SUS_MAP
 		if (arg2 == CMD_SUSFS_ENABLE_AVC_LOG_SPOOFING) {
 			int error = 0;
 			if (arg3 != 0 && arg3 != 1) {
