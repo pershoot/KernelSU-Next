@@ -42,10 +42,10 @@ perform_cleanup() {
 setup_kernelsu() {
     BRANCH="next-susfs"
     echo "[+] Setting up KernelSU-Next..."
-    test -d "$GKI_ROOT/KernelSU-Next" || git clone https://github.com/pershoot/KernelSU-Next && echo "[+] Repository cloned."
+    test -d "$GKI_ROOT/KernelSU-Next" || git clone git@github.com:xtrance63/KernelSU-Next.git && echo "[+] Repository cloned."
     cd "$GKI_ROOT/KernelSU-Next"
     git stash && echo "[-] Stashed current changes."
-    if [ "$(git status | sed -n 's/.*\(v[0-9][0-9.]*\).*/\1/p' | head -n1)" ]; then
+    if ! git describe --exact-match HEAD >/dev/null 2>&1; then
         git checkout "$BRANCH" && echo "[-] Switched to $BRANCH branch."
     fi
     git pull && echo "[+] Repository updated."

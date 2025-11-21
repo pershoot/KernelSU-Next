@@ -1,8 +1,12 @@
 #ifndef __KSU_H_KSU_MANAGER
 #define __KSU_H_KSU_MANAGER
 
+#include <linux/version.h>
 #include <linux/cred.h>
 #include <linux/types.h>
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
+#include <linux/sched.h>
+#endif
 
 #define KSU_INVALID_UID -1
 

@@ -21,6 +21,9 @@
 #include <linux/uaccess.h>
 #include <linux/workqueue.h>
 #include <linux/slab.h>
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
+#include <linux/sched.h>
+#endif
 
 #include "allowlist.h"
 #include "arch.h"
