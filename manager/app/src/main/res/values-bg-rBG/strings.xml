@@ -28,7 +28,6 @@
   <string name="susfs_supported">Поддържан</string>
   <string name="home_susfs">SuSFS: %s</string>
   <string name="home_susfs_version">Версия на SuSFS</string>
-  <string name="home_susfs_sus_su">SuS SU</string>
   <string name="home_android">Версия на Андроид</string>
   <string name="home_manager_version">Версия на мениджъра</string>
   <string name="home_abi">ABI</string>
@@ -131,8 +130,6 @@
   <string name="require_kernel_version">Текущата версия %1$d на KernelSU Next е твърде ниска, за да работи мениджърът правилно. Моля, актуализирайте до версия %2$d или по-висока!</string>
   <string name="settings_umount_modules_default">Демонтиране на модули</string>
   <string name="settings_umount_modules_default_summary">Глобалната стойност по подразбиране за „Демонтиране на модули“ в профила на приложението. Ако е активирана, ще премахне всички модификации на модулите в системата за приложения, които нямат зададен профил.</string>
-  <string name="settings_susfs_toggle">Скриване на закачването на kprobes</string>
-  <string name="settings_susfs_toggle_summary">Тази опция деактивира kprobes hook-а, създаден от ksu, и вместо това активира вградения non-kprobes hook, реализирайки същата функционалност, която би била приложена към ядро, различно от GKI, което не поддържа kprobe.</string>
   <string name="profile_umount_modules_summary">Активирането на тази опция ще позволи на KernelSU Next да възстанови всички модифицирани файлове от модулите за това приложение.</string>
   <string name="profile_selinux_domain">Домейн</string>
   <string name="profile_selinux_rules">Правила</string>

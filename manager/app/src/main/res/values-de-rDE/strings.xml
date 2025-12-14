@@ -28,7 +28,6 @@
   <string name="susfs_supported">Unterstützt</string>
   <string name="home_susfs">SuSFS: %s</string>
   <string name="home_susfs_version">SuSFS-Version</string>
-  <string name="home_susfs_sus_su">SuS SU</string>
   <string name="home_android">Android-Version</string>
   <string name="home_manager_version">Manager-Version</string>
   <string name="home_abi">Application Binary Interface (ABI)</string>
@@ -131,8 +130,6 @@
   <string name="require_kernel_version">Der aktuelle KernelSU Next Version %1$d ist zu niedrig, als dass der Manager ordnungsgemäß funktioniert. Bitte aktualisieren Sie auf Version %2$d oder höher!</string>
   <string name="settings_umount_modules_default">Module aushängen</string>
   <string name="settings_umount_modules_default_summary">Der globale Standardwert für „Module aushängen“ im App-Profil. Wenn er aktiviert ist, werden alle Moduländerungen im System für Apps entfernt, für die kein Profil festgelegt ist.</string>
-  <string name="settings_susfs_toggle">Kprobes Hook ausblenden</string>
-  <string name="settings_susfs_toggle_summary">Diese Option deaktiviert den von ksu erzeugten kprobes-Hook und aktiviert stattdessen den eingebetteten non-kprobes-Hook, der die gleiche Funktionalität implementiert, die auf einen Nicht-GKI-Kernel angewendet würde, der kprobe nicht unterstützt.</string>
   <string name="profile_umount_modules_summary">Wenn Sie diese Option aktivieren, kann KernelSU Next alle von den Modulen für diese Anwendung geänderten Dateien wiederherstellen.</string>
   <string name="profile_selinux_domain">Domäne</string>
   <string name="profile_selinux_rules">Regeln</string>

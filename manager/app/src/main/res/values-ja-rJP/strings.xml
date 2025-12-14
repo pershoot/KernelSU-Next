@@ -28,7 +28,6 @@
   <string name="susfs_supported">対応済み</string>
   <string name="home_susfs">SuSFS: %s</string>
   <string name="home_susfs_version">SuSFS バージョン</string>
-  <string name="home_susfs_sus_su">SuS SU</string>
   <string name="home_android">Android バージョン</string>
   <string name="home_manager_version">マネージャーバージョン</string>
   <string name="home_abi">ABI</string>
@@ -131,8 +130,6 @@
   <string name="require_kernel_version">現在のバージョン %1$d の KernelSU Next は、マネージャーの正常動作の保証ができません。バージョン %2$d またはそれ以降に更新してください！</string>
   <string name="settings_umount_modules_default">モジュールをアンマウント</string>
   <string name="settings_umount_modules_default_summary">アプリプロファイルの「モジュールをアンマウント」のデフォルト値を設定します。有効にすると、プロファイルが設定されていないアプリでの、全てのモジュールのシステムに対する変更が削除されます。</string>
-  <string name="settings_susfs_toggle">kprobes フックを隠す</string>
-  <string name="settings_susfs_toggle_summary">このオプションは ksu によって作成された kprobes フックを無効にし、埋め込まれた kprobes フックを代わりに有効にします。 kprobe をサポートしていない非 GKI カーネルに適用されるものと同じ機能を実装します。</string>
   <string name="profile_umount_modules_summary">このオプションを有効にすると、KernelSU Next はこのアプリのモジュールによって変更されたファイルを復元することができます。</string>
   <string name="profile_selinux_domain">ドメイン</string>
   <string name="profile_selinux_rules">ルール</string>

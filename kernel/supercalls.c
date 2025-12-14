@@ -501,7 +501,11 @@ static int do_get_hook_mode(void __user *arg)
 {
 	struct ksu_get_hook_mode_cmd cmd = {0};
 
+#ifdef CONFIG_KSU_SUSFS
+	strscpy(cmd.mode, "Kprobes/Inline", sizeof(cmd.mode));
+#else
 	strscpy(cmd.mode, "Kprobes", sizeof(cmd.mode));
+#endif
 
 	if (copy_to_user(arg, &cmd, sizeof(cmd))) {
 		pr_err("get_hook_mode: copy_to_user failed\n");

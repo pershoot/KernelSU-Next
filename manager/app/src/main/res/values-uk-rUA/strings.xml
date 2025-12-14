@@ -28,7 +28,6 @@
   <string name="susfs_supported">Доступно</string>
   <string name="home_susfs">SuSFS: %s</string>
   <string name="home_susfs_version">Версія SuSFS</string>
-  <string name="home_susfs_sus_su">SuS SU</string>
   <string name="home_android">Версія Android</string>
   <string name="home_manager_version">Версія менеджера</string>
   <string name="home_abi">ABI</string>
@@ -131,8 +130,6 @@
   <string name="require_kernel_version">Поточна версія KernelSU Next %1$d надто низька для коректної роботи менеджера. Будь ласка, оновіться до версії %2$d або вище!</string>
   <string name="settings_umount_modules_default">Вимкнути модулі</string>
   <string name="settings_umount_modules_default_summary">Глобальне значення за замовчуванням для \"Вимкнути модулі\" у Профілі додатка. Якщо увімкнено, це видалить усі модифікації системи модулями для додатків без встановленого профілю.</string>
-  <string name="settings_susfs_toggle">Сховати хуки kprobe</string>
-  <string name="settings_susfs_toggle_summary">Вимикає хуки kprobe, створені ksu, і замість цього активує вбудовані функції, що реалізують ту ж функціональність для ядер, які не підтримують kprobe.</string>
   <string name="profile_umount_modules_summary">Увімкнення цієї опції дозволить KernelSU Next відновлювати будь-які змінені модулями файли для цього додатка.</string>
   <string name="profile_selinux_domain">Домен</string>
   <string name="profile_selinux_rules">Правила</string>

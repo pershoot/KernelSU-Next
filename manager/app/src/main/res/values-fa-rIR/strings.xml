@@ -29,7 +29,6 @@
   <string name="susfs_supported">پشتیبانی شده</string>
   <string name="home_susfs">SuSFS: %s</string>
   <string name="home_susfs_version">نسخه SuSFS</string>
-  <string name="home_susfs_sus_su">SuS SU</string>
   <string name="home_android">نسخه اندروید</string>
   <string name="home_manager_version">نسخه مدیریت</string>
   <string name="home_abi">رابطه باینری</string>
@@ -132,8 +131,6 @@
   <string name="require_kernel_version">نسخه فعلی KernelSU Next %1$d برای عملکرد صحیح مدیریت، بسیار ضعیف است. لطفاً به نسخه %2$d یا بالاتر ارتقا دهید!</string>
   <string name="settings_umount_modules_default">ماژول‌های نصب‌شده</string>
   <string name="settings_umount_modules_default_summary">مقدار پیش‌فرض جهانی برای \"ماژول‌های نصب‌شده\" در پروفایل برنامه. در صورت فعال بودن، تمام تغییرات ماژول در سیستم را برای برنامه‌هایی که مجموعه پروفایل ندارند، حذف می‌کند.</string>
-  <string name="settings_susfs_toggle">هوک kprobes را مخفی کنید</string>
-  <string name="settings_susfs_toggle_summary">این گزینه هوک kprobes ایجاد شده توسط ksu را غیرفعال می‌کند و در عوض، هوک non-kprobes تعبیه شده را فعال می‌کند و همان عملکردی را که برای یک کرنل غیر GKI اعمال می‌شود، پیاده‌سازی می‌کند، کرنلی که از kprobe پشتیبانی نمی‌کند.</string>
   <string name="profile_umount_modules_summary">فعال کردن این گزینه به KernelSU Next اجازه می‌دهد تا هرگونه فایل تغییر یافته توسط ماژول‌های این برنامه را بازیابی کند.</string>
   <string name="profile_selinux_domain">دامنه</string>
   <string name="profile_selinux_rules">قوانین</string>

@@ -29,7 +29,6 @@
   <string name="susfs_supported">समर्थित</string>
   <string name="home_susfs">SuSFS: %s</string>
   <string name="home_susfs_version">SuSFS वर्जन</string>
-  <string name="home_susfs_sus_su">SuS SU</string>
   <string name="home_android">एंड्रॉयड वर्जन</string>
   <string name="home_manager_version">मैनेजर वर्जन</string>
   <string name="home_abi"></string>
@@ -132,9 +131,6 @@
   <string name="require_kernel_version">मैनेजर के ठीक से काम करने के लिए वर्तमान KernelSU Next वर्जन %1$d बहुत कम है। कृपया वर्जन %2$d या उच्चतर में अपग्रेड करें!</string>
   <string name="settings_umount_modules_default">मॉड्यूल्स यूमाउंट करें</string>
   <string name="settings_umount_modules_default_summary">ऐप प्रोफाइल में \"अनमाउंट मॉड्यूल\" के लिए ग्लोबल डिफ़ॉल्ट वैल्यू। यदि चालू किया गया है, तो यह एप्लीकेशंस के लिऐ सिस्टम के सभी मॉड्यूल मोडिफिकेशन को हटा देगा जिनकी प्रोफ़ाइल सेट नहीं है।</string>
-  <string name="settings_susfs_toggle">Kprobes हुक को छिपाएं
-</string>
-  <string name="settings_susfs_toggle_summary">यह विकल्प KSU द्वारा निर्मित kprobes हुक को निष्क्रिय कर देता है, तथा इसके स्थान पर एम्बेडेड non-kprobes हुक को सक्रिय कर देता है, तथा उसी कार्यक्षमता को क्रियान्वित करता है जो non-GKI कर्नल पर लागू होती है, जो kprobe का समर्थन नहीं करता है।</string>
   <string name="profile_umount_modules_summary">इस विकल्प को चालू करने से KernelSU Next इस एप्लिकेशन के लिए मॉड्यूल द्वारा किसी भी मोडिफाइड फ़ाइल को रिस्टोर कर सकता है।</string>
   <string name="profile_selinux_domain">डोमेन</string>
   <string name="profile_selinux_rules">नियम</string>

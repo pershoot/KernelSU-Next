@@ -805,6 +805,16 @@ private fun InfoCard(autoExpand: Boolean = false) {
                         icon = Icons.Filled.SettingsSuggest
                     )
 
+                    val suSFS = getSuSFS()
+                    if (suSFS == "Supported") {
+                        Spacer(Modifier.height(16.dp))
+                        InfoCardItem(
+                            label = stringResource(R.string.home_susfs_version),
+                            content = "${stringResource(R.string.susfs_supported)} | ${getSuSFSVersion()} (${getSuSFSVariant()})",
+                            icon = painterResource(R.drawable.ic_sus),
+                        )
+                    }
+
                     if (Natives.isZygiskEnabled()) {
                         Spacer(Modifier.height(16.dp))
                         InfoCardItem(

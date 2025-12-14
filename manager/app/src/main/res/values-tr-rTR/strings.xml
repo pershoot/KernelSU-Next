@@ -28,7 +28,6 @@
   <string name="susfs_supported">Destekleniyor</string>
   <string name="home_susfs">SuSFS: %s</string>
   <string name="home_susfs_version">SuSFS sürümü</string>
-  <string name="home_susfs_sus_su">SuS SU</string>
   <string name="home_android">Android sürümü</string>
   <string name="home_manager_version">Yönetici sürümü</string>
   <string name="home_abi">ABI</string>
@@ -131,8 +130,6 @@
   <string name="require_kernel_version">Geçerli KernelSU Next sürümü %1$d, yöneticinin düzgün çalışması için çok düşük. Lütfen %2$d veya daha yüksek bir sürüme yükseltin!</string>
   <string name="settings_umount_modules_default">Modüllerin bağlantısını kes</string>
   <string name="settings_umount_modules_default_summary">Uygulama profilinde \"Modüllerin bağlantısını kes\" ayarı için genel varsayılan değer. Etkinleştirilirse, profili ayarlanmamış tüm uygulamalar için sistemdeki tüm modül değişikliklerini kaldırır.</string>
-  <string name="settings_susfs_toggle">kprobes kancasını gizle</string>
-  <string name="settings_susfs_toggle_summary">Bu seçenek, ksu tarafından oluşturulan kprobes kancasını devre dışı bırakır ve bunun yerine, kprobe\'u desteklemeyen GKI olmayan bir çekirdeğe uygulanacak aynı işlevselliği uygulayan gömülü kprobes olmayan kancayı etkinleştirir.</string>
   <string name="profile_umount_modules_summary">Bu seçeneğin etkinleştirilmesi, KernelSU Next\'in bu uygulama için modüller tarafından değiştirilen tüm dosyaları geri yüklemesine izin verecektir.</string>
   <string name="profile_selinux_domain">Alan adı</string>
   <string name="profile_selinux_rules">Kurallar</string>

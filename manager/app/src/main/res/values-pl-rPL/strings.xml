@@ -28,7 +28,6 @@
   <string name="susfs_supported">Obsługiwany</string>
   <string name="home_susfs">SuSFS: %s</string>
   <string name="home_susfs_version">Wersja SuSFS</string>
-  <string name="home_susfs_sus_su">SuS SU</string>
   <string name="home_android">Wersja Androida</string>
   <string name="home_manager_version">Wersja managera</string>
   <string name="home_abi">ABI</string>
@@ -131,8 +130,6 @@
   <string name="require_kernel_version">Obecna wersja KernelSU Next %1$d jest zbyt niska, aby manager działał prawidłowo. Zaktualizuj do wersji %2$d lub wyższej!</string>
   <string name="settings_umount_modules_default">Odmontuj moduły</string>
   <string name="settings_umount_modules_default_summary">Globalna wartość domyślna opcji \"Odmontuj moduły\" w profilu aplikacji. Jeśli jest włączona, usunięte zostaną wszystkie modyfikacje systemowe dokonane przez moduły dla aplikacji, które nie mają ustawionego profilu.</string>
-  <string name="settings_susfs_toggle">Ukryj hooki kprobe</string>
-  <string name="settings_susfs_toggle_summary">Ta opcja wyłącza hooki kprobe stworzone przez ksu i zamiast tego aktywuje wbudowane hooki non-kprobe, implementując tę ​​samą funkcjonalność, która byłaby zastosowana w jądrze non-GKI, które nie obsługuje kprobe.</string>
   <string name="profile_umount_modules_summary">Włączenie tej opcji umożliwi KernelSU Next przywrócenie wszelkich plików zmodyfikowanych przez moduły dla tej aplikacji.</string>
   <string name="profile_selinux_domain">Domena</string>
   <string name="profile_selinux_rules">Reguły</string>

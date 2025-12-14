@@ -28,7 +28,6 @@
   <string name="susfs_supported">Didukung</string>
   <string name="home_susfs">SuSFS: %s</string>
   <string name="home_susfs_version">Versi SuSFS</string>
-  <string name="home_susfs_sus_su">SuS SU</string>
   <string name="home_android">Versi android</string>
   <string name="home_manager_version">Versi manajer</string>
   <string name="home_abi">Daftar ABI</string>
@@ -131,8 +130,6 @@
   <string name="require_kernel_version">Versi KernelSU Next saat ini %1$d sangat rendah untuk manager agar bekerja dengan baik. Mohon perbarui ke versi %2$d atau lebih tinggi!</string>
   <string name="settings_umount_modules_default">Umount modul</string>
   <string name="settings_umount_modules_default_summary">Menggunakan \"Umount modul\" secara universal pada Profil Aplikasi. Jika diaktifkan, ini akan menghapus semua modifikasi modul pada sistem untuk aplikasi yang tidak memiliki set profil.</string>
-  <string name="settings_susfs_toggle">Sembunyikan hook kprobes</string>
-  <string name="settings_susfs_toggle_summary">Opsi ini akan menonaktifkan hook kprobe yang digunakan oleh KSU, dan sebagai gantinya akan mengaktifkan hook non-kprobe yang tertanam, yang menerapkan fungsionalitas yang sama, ditujukan untuk kernel non-GKI yang tidak mendukung kprobe.</string>
   <string name="profile_umount_modules_summary">Mengaktifkan opsi ini akan memungkinkan KernelSU Next untuk memulihkan berkas yang termodifikasi oleh modul untuk aplikasi ini.</string>
   <string name="profile_selinux_domain">Domain</string>
   <string name="profile_selinux_rules">Peraturan</string>

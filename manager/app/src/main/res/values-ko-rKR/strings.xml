@@ -28,7 +28,6 @@
   <string name="susfs_supported">지원됨</string>
   <string name="home_susfs">SuSFS: %s</string>
   <string name="home_susfs_version">SuSFS version</string>
-  <string name="home_susfs_sus_su">SuS SU</string>
   <string name="home_android">Android version</string>
   <string name="home_manager_version">Manager version</string>
   <string name="home_abi">ABI</string>
@@ -131,8 +130,6 @@
   <string name="require_kernel_version">KernelSU Next 버전 %1$d이 너무 낮아서 Manager가 작동하지 않습니다. %2$d 이상의 버전을 사용하세요!</string>
   <string name="settings_umount_modules_default">모듈 언마운트</string>
   <string name="settings_umount_modules_default_summary">앱 프로필 메뉴의 \"모듈 언마운트\" 설정에 대한 전역 기본값을 설정합니다. 활성화 시, 개별 프로필이 설정되지 않은 앱은 모든 모듈의 시스템 수정 사항을 제거합니다.</string>
-  <string name="settings_susfs_toggle">Kprobes hook 숨김</string>
-  <string name="settings_susfs_toggle_summary">이 옵션을 선택하면 ksu에서 생성한 kprobes hook가 비활성화되고, 대신 내장된 non-kprobes hook가 활성화됩니다. 이로써 kprobe를 지원하지 않는 non-GKI 커널에 적용되는 것과 동일한 기능이 구현됩니다.</string>
   <string name="profile_umount_modules_summary">이 옵션이 활성화되면, KernelSU는 이 앱에 대한 모듈의 모든 수정사항을 복구합니다.</string>
   <string name="profile_selinux_domain">Domain</string>
   <string name="profile_selinux_rules">Rules</string>

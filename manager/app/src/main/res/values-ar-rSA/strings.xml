@@ -28,7 +28,6 @@
   <string name="susfs_supported">مدعوم</string>
   <string name="home_susfs">SuSFS: %s</string>
   <string name="home_susfs_version">إصدار SuSFS</string>
-  <string name="home_susfs_sus_su">SuS SU</string>
   <string name="home_android">إصدار الـ Android</string>
   <string name="home_manager_version">إصدار المدير</string>
   <string name="home_abi">ABI</string>
@@ -131,8 +130,6 @@
   <string name="require_kernel_version">الإصدار KernelSU Next الحالي %1$d منخفض جدا لكي يعمل المدير بشكل صحيح. الرجاء الترقية إلى الإصدار %2$d أو أعلى!</string>
   <string name="settings_umount_modules_default">الغاء تحميل الإضافات</string>
   <string name="settings_umount_modules_default_summary">القيمة الافتراضية العامة لـ\"إلغاء تحميل الإضافات\" في ملفات تعريف التطبيقات. إذا تم تمكينه، إزالة جميع تعديلات الإضافات على النظام للتطبيقات التي لا تحتوي على مجموعة ملف تعريف.</string>
-  <string name="settings_susfs_toggle">أخفاء خطاف kprobes</string>
-  <string name="settings_susfs_toggle_summary">يعطل هذا الخيار خطاف kprobes الذي أنشأه المدير وبدلا من ذلك، يقوم بتفعيل الخطاف المدمج، تنفيذ نفس الوظيفة التي سيتم تطبيقها على كيرنيل غير GKI ، الذي لا يدعم kprobes.</string>
   <string name="profile_umount_modules_summary">تمكين هذا الخيار سيسمح KernelSU Next لاستعادة أي ملفات معدلة بواسطة وحدات هذا التطبيق.</string>
   <string name="profile_selinux_domain">النطاق</string>
   <string name="profile_selinux_rules">القواعد</string>

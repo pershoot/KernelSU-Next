@@ -28,7 +28,6 @@
   <string name="susfs_supported">Supporté</string>
   <string name="home_susfs">SuSFS: %s</string>
   <string name="home_susfs_version">Version de SuSFS</string>
-  <string name="home_susfs_sus_su">SuS SU</string>
   <string name="home_android">Version d\'Android</string>
   <string name="home_manager_version">Version du gestionnaire</string>
   <string name="home_abi">IBA</string>
@@ -131,8 +130,6 @@
   <string name="require_kernel_version">La version actuelle de KernelSU (%d) est trop ancienne pour que le gestionnaire fonctionne correctement. Veuillez passer à la version %d ou à une version supérieure !</string>
   <string name="settings_umount_modules_default">Démonter les modules</string>
   <string name="settings_umount_modules_default_summary">La valeur par défaut globale pour « Démonter les modules » dans le profil de l\'application. Si activé, cela supprimera toutes les modifications de modules sur le système pour les applications qui n\'ont pas de profil défini.</string>
-  <string name="settings_susfs_toggle">Cacher l\'interception kprobes</string>
-  <string name="settings_susfs_toggle_summary">Cette option désactive l\'interception kprobes créé par ksu et, à la place, active l\'interception non-kpropes intégré, implémentant les mêmes fonctionnalités qui seraient appliquées à un noyau non GKI, qui ne supporte pas kprobe.</string>
   <string name="profile_umount_modules_summary">Activer cette option permettra à KernelSU Next de restaurer tous les fichiers modifiés par les modules pour cette application.</string>
   <string name="profile_selinux_domain">Domaine</string>
   <string name="profile_selinux_rules">Règles</string>
