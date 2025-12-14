@@ -23,6 +23,9 @@
   <string name="disable">Disable</string>
   <string name="enabled">Enabled</string>
   <string name="disabled">Disabled</string>
+  <string name="susfs_supported">Didukung</string>
+  <string name="home_susfs">SuSFS: %s</string>
+  <string name="home_susfs_version">Versi SuSFS</string>
   <string name="home_android">Android version</string>
   <string name="home_manager_version">Versi manager</string>
   <string name="home_abi">ABI list</string>

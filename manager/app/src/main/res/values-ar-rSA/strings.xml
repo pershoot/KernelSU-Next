@@ -23,6 +23,9 @@
   <string name="disable">تعطيل</string>
   <string name="enabled">مفعل</string>
   <string name="disabled">معطل</string>
+  <string name="susfs_supported">مدعوم</string>
+  <string name="home_susfs">SuSFS: %s</string>
+  <string name="home_susfs_version">إصدار SuSFS</string>
   <string name="home_android">إصدار اندرويد</string>
   <string name="home_manager_version">إصدار التطبيق</string>
   <string name="home_abi">قائمة ABI</string>

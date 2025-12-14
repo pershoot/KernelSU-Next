@@ -1,6 +1,8 @@
 use anyhow::Result;
 use rust_embed::RustEmbed;
 use std::path::Path;
+use const_format::formatcp;
+use crate::defs::BINARY_DIR;
 
 #[cfg(target_os = "android")]
 mod android {
@@ -29,6 +31,9 @@ mod android {
 
 #[cfg(target_os = "android")]
 pub use android::*;
+
+#[allow(dead_code)]
+pub const SUSFSD_PATH: &str = formatcp!("{}/susfsd", BINARY_DIR);
 
 #[cfg(all(target_arch = "x86_64", target_os = "android"))]
 #[derive(RustEmbed)]
