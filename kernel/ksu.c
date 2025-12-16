@@ -13,6 +13,9 @@
 #include "throne_tracker.h"
 #ifndef CONFIG_KSU_SUSFS
 #include "syscall_hook_manager.h"
+#else
+#include "setuid_hook.h"
+#include "sucompat.h"
 #endif // #ifndef CONFIG_KSU_SUSFS
 #include "ksud.h"
 #include "supercalls.h"
@@ -44,6 +47,9 @@ int __init kernelsu_init(void)
 
 #ifndef CONFIG_KSU_SUSFS
 	ksu_syscall_hook_manager_init();
+#else
+	ksu_setuid_hook_init();
+	ksu_sucompat_init();
 #endif // #ifndef CONFIG_KSU_SUSFS
 
 	ksu_allowlist_init();

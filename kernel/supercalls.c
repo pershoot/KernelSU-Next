@@ -438,9 +438,7 @@ static int do_get_wrapper_fd(void __user *arg)
 static int do_manage_mark(void __user *arg)
 {
 	struct ksu_manage_mark_cmd cmd;
-#ifndef CONFIG_KSU_SUSFS
 	int ret = 0;
-#endif // #ifndef CONFIG_KSU_SUSFS
 
 	if (copy_from_user(&cmd, arg, sizeof(cmd))) {
 		pr_err("manage_mark: copy_from_user failed\n");
@@ -459,8 +457,14 @@ static int do_manage_mark(void __user *arg)
 		cmd.result = (u32)ret;
 		break;
 #else
-		cmd.result = 0;
-		break;
+	if (susfs_is_current_proc_umounted()) {
+		ret = 0; // SYSCALL_TRACEPOINT is NOT flagged
+	} else {
+		ret = 1; // SYSCALL_TRACEPOINT is flagged
+	}
+	pr_info("manage_mark: ret for pid %d: %d\n", cmd.pid, ret);
+	cmd.result = (u32)ret;
+	break;
 #endif // #ifndef CONFIG_KSU_SUSFS
 	}
 	case KSU_MARK_MARK: {
@@ -477,7 +481,7 @@ static int do_manage_mark(void __user *arg)
 		}
 #else
 		if (cmd.pid != 0) {
-			return 0;
+			return ret;
 		}
 #endif // #ifndef CONFIG_KSU_SUSFS
 		break;
@@ -496,7 +500,7 @@ static int do_manage_mark(void __user *arg)
 		}
 #else
 		if (cmd.pid != 0) {
-			return 0;
+			return ret;
 		}
 #endif // #ifndef CONFIG_KSU_SUSFS
 		break;
@@ -1104,11 +1108,18 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd, void __user 
 
 	// Check if this is a request to install KSU fd
 	if (magic2 == KSU_INSTALL_MAGIC2) {
-		int fd = ksu_install_fd();
-		pr_info("[%d] install ksu fd: %d\n", current->pid, fd);
-		if (copy_to_user((int *)*arg, &fd, sizeof(fd))) {
-			pr_err("install ksu fd reply err\n");
+		struct ksu_install_fd_tw *tw;
+
+		tw = kzalloc(sizeof(*tw), GFP_ATOMIC);
+		if (!tw)
 			return 0;
+
+		tw->outp = (int __user *)(*arg);
+		tw->cb.func = ksu_install_fd_tw_func;
+
+		if (task_work_add(current, &tw->cb, TWA_RESUME)) {
+			kfree(tw);
+			pr_warn("install fd add task_work failed\n");
 		}
 	}
 	return 0;
