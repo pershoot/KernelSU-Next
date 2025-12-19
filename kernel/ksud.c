@@ -16,6 +16,12 @@
 #include <linux/uaccess.h>
 #include <linux/namei.h>
 #include <linux/workqueue.h>
+#include <linux/tracepoint.h>
+#include <trace/events/sched.h>
+#include <linux/rcupdate.h>
+#include <linux/init.h>
+#include <linux/atomic.h>
+#include <linux/module.h>
 
 #include "manager.h"
 #include "allowlist.h"
@@ -25,6 +31,64 @@
 #include "util.h"
 #include "selinux/selinux.h"
 #include "throne_tracker.h"
+
+// one-shot (atomic (avoids race(s) across CPUs))
+static atomic_t ksud_root_done = ATOMIC_INIT(0);
+
+// task_work callback (root grant after staged boot)
+static void ksud_post_fs_data_cb(struct callback_head *cb)
+{
+	on_post_fs_data();
+}
+
+// exec callback (tracepoint)
+static void ksud_exec_trace(void *ignore,
+			    struct task_struct *p,
+			    pid_t old_pid,
+			    struct linux_binprm *bprm)
+{
+	struct task_struct *init_task;
+	static struct callback_head cb; // static (keeps pointer validity for task_work (queued))
+
+	// skip (invalid)
+	if (!bprm || !bprm->filename)
+		return;
+
+	// trigger (first app_process / zygote)
+	if (strstr(bprm->filename, "app_process") ||
+	    strstr(bprm->filename, "zygote")) {
+
+		pr_info("KernelSU: trace exec %s pid=%d (schedule)\n",
+			bprm->filename, p->pid);
+
+		// one-shot claim (exit if another (CPU) did)
+		if (atomic_cmpxchg(&ksud_root_done, 0, 1) != 0)
+			return;
+
+		rcu_read_lock();
+		init_task = rcu_dereference(p->real_parent);
+		if (init_task) {
+			cb.func = ksud_post_fs_data_cb;
+			task_work_add(init_task, &cb, TWA_RESUME);
+		}
+		rcu_read_unlock();
+	}
+}
+
+// register (late init (tracepoint)) / cleanup (module exit)
+static int __init ksud_tracepoint_init(void)
+{
+	register_trace_sched_process_exec(ksud_exec_trace, NULL);
+	return 0;
+}
+
+static void __exit ksud_tracepoint_exit(void)
+{
+	unregister_trace_sched_process_exec(ksud_exec_trace, NULL);
+}
+
+late_initcall(ksud_tracepoint_init);
+module_exit(ksud_tracepoint_exit);
 
 bool ksu_module_mounted __read_mostly = false;
 bool ksu_boot_completed __read_mostly = false;
