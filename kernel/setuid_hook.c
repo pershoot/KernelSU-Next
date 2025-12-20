@@ -12,7 +12,7 @@
 #include <linux/uaccess.h>
 #include <linux/uidgid.h>
 #ifdef CONFIG_KSU_SUSFS
-#include <linux/susfs.h>
+#include <linux/susfs_def.h>
 #endif // #ifdef CONFIG_KSU_SUSFS
 
 #include "allowlist.h"
