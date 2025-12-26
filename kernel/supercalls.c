@@ -542,7 +542,13 @@ static int do_get_hook_mode(void __user *arg)
 {
 	struct ksu_get_hook_mode_cmd cmd = {0};
 
+#ifndef CONFIG_KSU_SUSFS
+	strscpy(cmd.mode, "Kprobes", sizeof(cmd.mode));
+#elif defined(CONFIG_KPROBES) || defined(CONFIG_TRACEPOINTS)
+	strscpy(cmd.mode, "Hybrid", sizeof(cmd.mode));
+#else
 	strscpy(cmd.mode, "Inline", sizeof(cmd.mode));
+#endif // CONFIG_KSU_SUSFS
 
 	if (copy_to_user(arg, &cmd, sizeof(cmd))) {
 		pr_err("get_hook_mode: copy_to_user failed\n");
