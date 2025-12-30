@@ -184,6 +184,10 @@ static const char ksud_path[] = KSUD_PATH;
 
 extern bool ksu_kernel_umount_enabled;
 
+/*
+ * return 0 -> No further checks should be required afterwards
+ * return 1 -> Further checks should be continued afterwards
+ */
 int ksu_handle_execveat_init(struct filename *filename) {
 	if (current->pid != 1 && is_init(get_current_cred())) {
 		if (unlikely(strcmp(filename->name, KSUD_PATH) == 0)) {
