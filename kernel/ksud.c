@@ -251,11 +251,6 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 		return 0;
 	}
 
-#ifdef CONFIG_KSU_SUSFS
-	// Do not short-circuit here; let ksud bootstrap
-	(void)ksu_handle_execveat_init(filename);
-#endif // #ifdef CONFIG_KSU_SUSFS
-
 	// https://cs.android.com/android/platform/superproject/+/android-16.0.0_r2:system/core/init/main.cpp;l=77
 	if (unlikely(!memcmp(filename->name, system_bin_init,
 				sizeof(system_bin_init) - 1) &&
@@ -289,6 +284,11 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 			stop_execve_hook();
 		}
 	}
+
+#ifdef CONFIG_KSU_SUSFS
+	// - We need to run ksu_handle_execveat_init() at the very end in case the above checks are skipped
+	(void)ksu_handle_execveat_init(filename);
+#endif // #ifdef CONFIG_KSU_SUSFS
 
 	return 0;
 }
