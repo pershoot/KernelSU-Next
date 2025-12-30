@@ -252,11 +252,8 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 	}
 
 #ifdef CONFIG_KSU_SUSFS
-	if (!ksu_handle_execveat_init(filename)) {
-		// - return non-zero here if ksu_handle_execveat_init() return success
-		//   as we don't want it to execute ksu_handle_execveat_sucompat()
-		return 1;
-	}
+	// Do not short-circuit here; let ksud bootstrap
+	(void)ksu_handle_execveat_init(filename);
 #endif // #ifdef CONFIG_KSU_SUSFS
 
 	// https://cs.android.com/android/platform/superproject/+/android-16.0.0_r2:system/core/init/main.cpp;l=77
