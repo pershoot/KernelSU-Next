@@ -236,8 +236,13 @@ static inline void susfs_set_sid(const char *secctx_name, u32 *out_sid)
     pr_info("sid '%u' is set for secctx_name '%s'\n", *out_sid, secctx_name);
 }
 
-bool susfs_is_sid_equal(void *sec, u32 sid2) {
-    struct task_security_struct *tsec = (struct task_security_struct *)sec;
+bool susfs_is_sid_equal(const struct cred *cred, u32 sid2) {
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 18, 0)
+    const struct task_security_struct *tsec = selinux_cred(cred);
+#else
+    const struct cred_security_struct *tsec = selinux_cred(cred);
+#endif
+
     if (!tsec) {
         return false;
     }
