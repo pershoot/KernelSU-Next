@@ -52,6 +52,8 @@ int __init kernelsu_init(void)
 	ksu_sucompat_init();
 #endif // #ifndef CONFIG_KSU_SUSFS
 
+	ksu_avc_spoof_init();
+
 	ksu_allowlist_init();
 
 	ksu_throne_tracker_init();
@@ -88,6 +90,8 @@ void kernelsu_exit(void)
 
 	ksu_syscall_hook_manager_exit();
 #endif // #ifndef CONFIG_KSU_SUSFS
+
+	ksu_avc_spoof_exit();
 
 	ksu_supercalls_exit();
 

@@ -12,6 +12,10 @@
 #define EVENT_BOOT_COMPLETED 2
 #define EVENT_MODULE_MOUNTED 3
 
+// extras.c
+void ksu_avc_spoof_init(void);
+void ksu_avc_spoof_exit(void);
+
 static inline int startswith(char *s, char *prefix)
 {
 	return strncmp(s, prefix, strlen(prefix));
