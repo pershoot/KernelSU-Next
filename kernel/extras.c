@@ -21,11 +21,39 @@ static atomic_t disable_spoof = ATOMIC_INIT(1);
 void ksu_avc_spoof_enable();
 void ksu_avc_spoof_disable();
 
+#ifndef CONFIG_KSU_SUSFS
 static bool ksu_avc_spoof_enabled = true;
+#else
+static bool ksu_avc_spoof_enabled = false;
+extern bool susfs_is_avc_log_spoofing_enabled;
+// KP registered (1 (KP active), 0 (not))
+static atomic_t ksu_avc_spoof_armed = ATOMIC_INIT(0);
+// Defer (can't run within syscall context)
+static void ksu_avc_spoof_disable_workfn(struct work_struct *work);
+static DECLARE_WORK(ksu_avc_spoof_disable_work, ksu_avc_spoof_disable_workfn);
+
+// Susfs owns; called in to from susfs avc (disabled -> enabled)
+void ksu_avc_spoof_susfs_on(void)
+{
+	if (ksu_avc_spoof_enabled || atomic_read(&ksu_avc_spoof_armed)) {
+		pr_info("avc_spoof: SuSFS's AVC spoof enabled; scheduling KSU's feature shutdown\n");
+		ksu_avc_spoof_enabled = false;
+		atomic_set(&disable_spoof, 1);
+		schedule_work(&ksu_avc_spoof_disable_work);
+	}
+}
+#endif
 static bool boot_completed = false;
 
 static int avc_spoof_feature_get(u64 *value)
 {
+#ifdef CONFIG_KSU_SUSFS
+	if (susfs_is_avc_log_spoofing_enabled) {
+		*value = 0;
+		return 0;
+	}
+#endif
+
 	*value = ksu_avc_spoof_enabled ? 1 : 0;
 	return 0;
 }
@@ -33,6 +61,14 @@ static int avc_spoof_feature_get(u64 *value)
 static int avc_spoof_feature_set(u64 value)
 {
 	bool enable = value != 0;
+
+#ifdef CONFIG_KSU_SUSFS
+	// Prevent ksu avc enablement (during susfs avc)
+	if (enable && susfs_is_avc_log_spoofing_enabled) {
+		pr_info("avc_spoof: KSU's AVC spoof request ignored; SuSFS's feature active\n");
+		return -EBUSY;
+	}
+#endif
 
 	if (enable == ksu_avc_spoof_enabled) {
 		pr_info("avc_spoof: no need to change\n");
@@ -104,6 +140,14 @@ static struct kprobe *slow_avc_audit_kp;
 //	.pre_handler = slow_avc_audit_pre_handler,
 static int slow_avc_audit_pre_handler(struct kprobe *p, struct pt_regs *regs)
 {
+#ifdef CONFIG_KSU_SUSFS
+	// Check (prevents dual spoofing)
+	if (susfs_is_avc_log_spoofing_enabled) {
+		pr_info("avc_spoof: SuSFS's AVC spoof active; skipping KSU's feature\n");
+		return 0;
+	}
+#endif
+
 	if (atomic_read(&disable_spoof))
 		return 0;
 
@@ -161,13 +205,28 @@ static void destroy_kprobe(struct kprobe **kp_ptr)
 
 void ksu_avc_spoof_disable(void)
 {
-#ifdef CONFIG_KPROBES
+#if defined(CONFIG_KPROBES) && defined(CONFIG_KSU_SUSFS)
+	// Only one caller (worker / direct; KP tear down)
+	if (atomic_cmpxchg(&ksu_avc_spoof_armed, 1, 0)) {
+		pr_info("avc_spoof/exit: unregister slow_avc_audit kprobe!\n");
+		destroy_kprobe(&slow_avc_audit_kp);
+	}
+#elif defined(CONFIG_KPROBES)
 	pr_info("avc_spoof/exit: unregister slow_avc_audit kprobe!\n");
 	destroy_kprobe(&slow_avc_audit_kp);
 #endif
 	atomic_set(&disable_spoof, 1);
 	pr_info("avc_spoof/exit: slow_avc_audit spoofing disabled!\n");
 }
+
+#ifdef CONFIG_KSU_SUSFS
+static void ksu_avc_spoof_disable_workfn(struct work_struct *work)
+{
+	// Deferred (teardown with flag (armed) via cmpxchg)
+	pr_info("avc_spoof: deferred; disable / unregister (slow_avc_audit kprobe)\n");
+	ksu_avc_spoof_disable();
+}
+#endif
 
 void ksu_avc_spoof_enable(void) 
 {
@@ -182,6 +241,10 @@ void ksu_avc_spoof_enable(void)
 	slow_avc_audit_kp = init_kprobe("slow_avc_audit", slow_avc_audit_pre_handler);
 #endif	
 	// once we get the sids, we can now enable the hook handler
+#ifdef CONFIG_KSU_SUSFS
+	// KP active marker (used by susfs for shutdown)
+	atomic_set(&ksu_avc_spoof_armed, 1);
+#endif
 	atomic_set(&disable_spoof, 0);
 	
 	pr_info("avc_spoof/init: slow_avc_audit spoofing enabled!\n");
