@@ -372,12 +372,6 @@ append_ksu_rc:
 
 static bool is_init_rc(struct file *fp)
 {
-#ifdef CONFIG_KSU_SUSFS
-	if (!ksu_init_rc_hook) {
-		return 0;
-	}
-#endif // #ifdef CONFIG_KSU_SUSFS
-
 	if (strcmp(current->comm, "init")) {
 		// we are only interest in `init` process
 		return false;
@@ -644,6 +638,23 @@ static void do_stop_input_hook(struct work_struct *work)
 	unregister_kprobe(&input_event_kp);
 }
 #endif // #ifndef CONFIG_KSU_SUSFS
+
+#ifdef CONFIG_KSU_SUSFS
+void ksu_handle_sys_newfstatat(int fd, loff_t *kstat_size_ptr) {
+	loff_t new_size = *kstat_size_ptr + ksu_rc_len;
+	struct file *file = fget(fd);
+
+	if (!file)
+		return;
+
+	if (is_init_rc(file)) {
+		pr_info("stat init.rc");
+		pr_info("adding ksu_rc_len: %lld -> %lld", *kstat_size_ptr, new_size);
+		*kstat_size_ptr = new_size;
+	}
+	fput(file);
+}
+#endif // #ifdef CONFIG_KSU_SUSFS
 
 static void stop_init_rc_hook()
 {
