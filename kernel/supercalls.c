@@ -1149,7 +1149,7 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd, void __user 
 			susfs_show_version(arg);
 			return 0;
 		}
-		return 0;
+		return -EINVAL;
 	}
 
 	// Check if this is a request to install KSU fd
@@ -1167,6 +1167,7 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd, void __user 
 			kfree(tw);
 			pr_warn("install fd add task_work failed\n");
 		}
+		return 0;
 	}
 
 	if (magic2 == CHANGE_MANAGER_UID) {
@@ -1209,7 +1210,7 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd, void __user 
 	if (magic2 == CHANGE_SPOOF_UNAME)
 		return ksu_handle_change_spoof_uname((unsigned long)*arg);
 
-	return 0;
+	return -EINVAL;
 }
 EXPORT_SYMBOL(ksu_handle_sys_reboot); // required visiblity for toolkit
 #endif // #ifndef CONFIG_KSU_SUSFS
