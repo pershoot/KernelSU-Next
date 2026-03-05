@@ -1023,7 +1023,7 @@ private fun InfoCard(autoExpand: Boolean = false) {
                         Spacer(Modifier.height(16.dp))
                         InfoCardItem(
                             label = stringResource(R.string.home_susfs_version),
-                            content = "${stringResource(R.string.supported)} | ${getSuSFSVersion()} (${getSuSFSVariant()})",
+                            content = "${stringResource(R.string.supported)} | ${getSuSFSVersion()} (Inline | ${getSuSFSVariant()})",
                             icon = painterResource(R.drawable.ic_sus),
                         )
                     }

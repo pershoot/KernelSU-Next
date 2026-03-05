@@ -542,7 +542,7 @@ static int do_get_hook_mode(void __user *arg)
 {
 	struct ksu_get_hook_mode_cmd cmd = {0};
 
-	strscpy(cmd.mode, "Kprobes", sizeof(cmd.mode));
+	strscpy(cmd.mode, "Inline", sizeof(cmd.mode));
 
 	if (copy_to_user(arg, &cmd, sizeof(cmd))) {
 		pr_err("get_hook_mode: copy_to_user failed\n");
