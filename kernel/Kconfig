@@ -43,7 +43,7 @@ config KSU_SUSFS_SUS_PATH
 	  - Allow hiding the user-defined path and all its sub-paths from various system calls.
 	  - Use "add_sus_path_loop" instead of "add_sus_path" if the user-defined path is frequently modified.
 	  - Use with cautious as it may cause performance loss and will be vulnerable to side channel attacks,
-	    just disable this feature if it doesn't work for you or you don't need it at all.
+		just disable this feature if it doesn't work for you or you don't need it at all.
 	  - Effective only on zygote spawned user app process with uid >= 10000.
 
 config KSU_SUSFS_SUS_MOUNT
