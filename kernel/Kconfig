@@ -99,8 +99,10 @@ config KSU_SUSFS_OPEN_REDIRECT
 	default y
 	help
 	  - Allow redirecting a target path to be opened with another user-defined path.
-	  - Please be reminded that process with open access to the target and redirected path can be detected.
-	  - Effective only on processes with uid < 2000.
+	   - Both target path and redirected path must be existed before they can be added to the kernel.
+	   - Users have to take care of the selinux permission of both target path and redirected path by themselves.
+	   - OPEN_REDIRECT does not bypass detections, but users may try other feature like SUS_KSTAT to bypass some of them.
+	  - Effective only on processes with pre-defined uid scheme.
 
 config KSU_SUSFS_SUS_MAP
 	bool "Enable to hide some mmapped real file from different proc maps interfaces"
