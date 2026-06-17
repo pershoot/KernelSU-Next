@@ -137,6 +137,33 @@ static const char __user *get_user_arg_ptr(struct user_arg_ptr argv, int nr)
 	return native;
 }
 
+static bool ksu_str_ends_with(const char *str, size_t str_len, const char *suffix)
+{
+    size_t suffix_len = strlen(suffix);
+    if (suffix_len > str_len)
+        return false;
+    return memcmp(str + str_len - suffix_len, suffix, suffix_len) == 0;
+}
+
+static bool ksu_is_zygote_or_adbd(const char *name, size_t len)
+{
+    if (len < 5)
+        return false;
+
+    // Fast-path: Check last character first to skip 99% of processes
+    char last = name[len - 1];
+    if (last == 'd')
+        return ksu_str_ends_with(name, len, "/adbd");
+    if (last == 's')
+        return ksu_str_ends_with(name, len, "/app_process");
+    if (last == '2')
+        return ksu_str_ends_with(name, len, "/app_process32");
+    if (last == '4')
+        return ksu_str_ends_with(name, len, "/app_process64");
+
+    return false;
+}
+
 /*
  * return 0 -> No further checks should be required afterwards
  * return non-zero -> Further checks should be continued afterwards
@@ -161,13 +188,15 @@ int ksu_handle_execveat_init(struct filename *filename, struct user_arg_ptr *arg
             pending_sucompat = ksu_sulog_capture_sucompat_kernel(filename->name, (const char __user *const __user *)argv_user->ptr.native, GFP_KERNEL);
             ksu_sulog_emit_pending(pending_sucompat, ret, GFP_KERNEL);
             return 0;
-        } else if (likely(strstr(filename->name, "/app_process") == NULL &&
-                    strstr(filename->name, "/adbd") == NULL) &&
-                    !susfs_is_current_proc_umounted())
-        {
-            pr_info("susfs: mark no sucompat checks for pid: '%d', exec: '%s'\n", current->pid, filename->name);
-            susfs_set_current_proc_umounted();
-            return 0;
+        } else {
+            size_t len = strlen(filename->name);
+            if (likely(!ksu_is_zygote_or_adbd(filename->name, len)) &&
+                        !susfs_is_current_proc_umounted())
+            {
+                pr_info("susfs: mark no sucompat checks for pid: '%d', exec: '%s'\n", current->pid, filename->name);
+                susfs_set_current_proc_umounted();
+                return 0;
+            }
         }
 
 #ifdef CONFIG_COMPAT
@@ -272,6 +301,7 @@ int ksu_handle_faccessat(int *dfd, const char __user **filename_user,
     char path[sizeof(su_path) + 1] = {0};
     if (strncpy_from_user_nofault(path, *filename_user, sizeof(path)) < 0)
         return 0;
+
     if (unlikely(!memcmp(path, su_path, sizeof(su_path)))) {
         if (current_chrooted())
         {
@@ -336,6 +366,7 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
     char path[sizeof(su_path) + 1] = {0};
     if (strncpy_from_user_nofault(path, *filename_user, sizeof(path)) < 0)
         return 0;
+
     if (unlikely(!memcmp(path, su_path, sizeof(su_path)))) {
         if (current_chrooted())
         {
