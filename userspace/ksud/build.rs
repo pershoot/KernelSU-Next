@@ -4,9 +4,29 @@ use std::io::Write;
 use std::path::Path;
 use std::process::Command;
 
+fn get_base_commit() -> String {
+    let branch = Command::new("git").args(["rev-parse", "--abbrev-ref", "HEAD"]).output()
+        .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string()).unwrap_or_else(|_| "dev".into());
+    let b = branch.split('-').next().unwrap_or("dev");
+    let b = if b.is_empty() || b == "HEAD" { "dev" } else { b };
+
+    let mut base = Command::new("git").args(["merge-base", "HEAD", &format!("refs/remotes/origin/{}", b)]).output()
+        .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string()).unwrap_or_default();
+    if base.is_empty() || base.contains("fatal") {
+        base = Command::new("git").args(["merge-base", "HEAD", "refs/remotes/origin/main"]).output()
+            .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string()).unwrap_or_default();
+    }
+    if base.is_empty() || base.contains("fatal") {
+        "HEAD".to_string()
+    } else {
+        base
+    }
+}
+
 fn get_git_version() -> Result<(u32, String), std::io::Error> {
+    let base_commit = get_base_commit();
     let output = Command::new("git")
-        .args(["rev-list", "--count", "HEAD"])
+        .args(["rev-list", "--count", &base_commit])
         .output()?;
 
     let output = output.stdout;
@@ -19,7 +39,7 @@ fn get_git_version() -> Result<(u32, String), std::io::Error> {
 
     let version_name = String::from_utf8(
         Command::new("git")
-            .args(["describe", "--tags", "--always"])
+            .args(["describe", "--tags", "--always", &base_commit])
             .output()?
             .stdout,
     )
