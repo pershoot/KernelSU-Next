@@ -282,6 +282,16 @@ pub fn soft_reboot() -> Result<()> {
     }
     on_boot_completed();
 
+    // Workaround for wireless debugging dropping on soft reboot
+    if let Ok(out) = Command::new("settings").args(["get", "global", "adb_wifi_enabled"]).output() {
+        if String::from_utf8_lossy(&out.stdout).trim() == "1" {
+            info!("Kicking wireless debugging...");
+            let _ = Command::new("settings").args(["put", "global", "adb_wifi_enabled", "0"]).status();
+            std::thread::sleep(std::time::Duration::from_secs(1));
+            let _ = Command::new("settings").args(["put", "global", "adb_wifi_enabled", "1"]).status();
+        }
+    }
+
     unsafe {
         _exit(0);
     }
