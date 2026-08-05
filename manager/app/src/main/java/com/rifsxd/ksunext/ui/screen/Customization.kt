@@ -12,6 +12,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Contrast
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.ViewCarousel
+import androidx.compose.material.icons.filled.Vibration
 import androidx.compose.material.icons.filled.Dock
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -316,6 +317,21 @@ fun CustomizationScreen(navigator: DestinationsNavigator) {
             ) { checked ->
                 activity?.setNavBarEnabled(checked)
                 enableNavBar = checked
+            }
+
+            var enableHaptics by rememberSaveable {
+                mutableStateOf(
+                    prefs.getBoolean("enable_haptics", false)
+                )
+            }
+            SwitchItem(
+                icon = Icons.Filled.Vibration,
+                title = stringResource(id = R.string.settings_haptics),
+                summary = stringResource(id = R.string.settings_haptics_summary),
+                checked = enableHaptics
+            ) { checked ->
+                activity?.setHapticsEnabled(checked)
+                enableHaptics = checked
             }
         }
     }
