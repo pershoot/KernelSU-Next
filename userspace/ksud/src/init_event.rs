@@ -13,7 +13,7 @@ use rustix::process::chdir;
 use std::path::Path;
 use std::process::Command;
 
-pub fn on_post_data_fs() -> Result<()> {
+pub fn on_post_data_fs(is_soft_reboot: bool) -> Result<()> {
     if let Err(e) = ksucalls::ensure_uapi_version_matched() {
         error!("{e:#}, skip on_post_fs_data");
         return Ok(());
@@ -44,7 +44,7 @@ pub fn on_post_data_fs() -> Result<()> {
         // we should still ensure module directory exists in safe mode
         // because we may need to operate the module dir in safe mode
         warn!("safe mode, skip common post-fs-data.d scripts");
-    } else {
+    } else if !is_soft_reboot {
         // Then exec common post-fs-data scripts
         if let Err(e) = crate::module::exec_common_scripts("post-fs-data.d", true) {
             warn!("exec common post-fs-data scripts failed: {e}");
@@ -269,7 +269,7 @@ pub fn soft_reboot() -> Result<()> {
         warn!("stop exited with status: {status}");
     }
     info!("post-fs-data");
-    on_post_data_fs()?;
+    on_post_data_fs(true)?;
     info!("start");
     let status = Command::new("start").status().context("start failed")?;
     if !status.success() {
