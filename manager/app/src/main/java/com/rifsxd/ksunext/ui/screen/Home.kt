@@ -660,10 +660,13 @@ private fun TopBar(
     ) { }
 
     val context = LocalContext.current
+    val windowInfo = androidx.compose.ui.platform.LocalWindowInfo.current
 
-    LaunchedEffect(Unit) {
-        isSpinning = true
-        rotationTarget += 360f * 6
+    LaunchedEffect(windowInfo.isWindowFocused) {
+        if (windowInfo.isWindowFocused) {
+            isSpinning = true
+            rotationTarget += 360f * 6
+        }
     }
 
         TopAppBar(
@@ -1400,6 +1403,7 @@ fun handleDynamicShortcuts(context: Context, moduleConfigs: List <Pair<ModuleVie
             .setIntent(
                 Intent(context, WebUIActivity::class.java).apply {
                     action = Intent.ACTION_VIEW
+                    putExtra("is_internal_transition", true)
                     data = "kernelsu://webui/${module.id}".toUri()
                     putExtra("id", module.id)
                     putExtra("name", module.name)
