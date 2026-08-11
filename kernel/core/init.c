@@ -28,9 +28,12 @@
 
 #ifdef CONFIG_KSU_SUSFS
 #include <linux/susfs.h>
+#include <linux/init.h>
 #include "hook/setuid_hook.h"
 #include "feature/sucompat.h"
 extern void ksu_avc_spoof_late_init(void);
+extern struct static_key_true ksu_is_init_rc_hook_enabled;
+extern struct static_key_true ksu_is_input_hook_enabled;
 #endif
 
 #if defined(__x86_64__) && !defined(CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER)
@@ -80,6 +83,7 @@ __attribute__((naked)) int __init kernelsu_init_early(void)
 
 struct cred *ksu_cred;
 bool ksu_late_loaded;
+bool ksu_is_recovery;
 
 #ifdef CONFIG_KSU_DEBUG
 bool allow_shell = true;
@@ -95,6 +99,26 @@ int __init kernelsu_init(void)
 {
 #ifdef CONFIG_KSU_SUSFS
 	susfs_init();
+
+	/* Detect recovery mode from kernel command line.
+	 * In recovery, KernelSU hooks can cause boot loops because the normal
+	 * Android boot sequence (init second_stage -> zygote -> post-fs-data)
+	 * never happens, leaving hooks permanently active.
+	 */
+	if (saved_command_line &&
+	    (strstr(saved_command_line, "androidboot.force_normal_boot=0") ||
+	     (!strstr(saved_command_line, "androidboot.force_normal_boot=1") &&
+	      (strstr(saved_command_line, "androidboot.mode=recovery") ||
+	       strstr(saved_command_line, "bootmode=recovery"))))) {
+		ksu_is_recovery = true;
+		pr_info("KernelSU: Recovery mode detected, disabling hooks to prevent boot loop\n");
+		/* Disable init.rc read/fstat interception */
+		if (static_key_enabled(&ksu_is_init_rc_hook_enabled))
+			static_branch_disable(&ksu_is_init_rc_hook_enabled);
+		/* Disable input event hook (safe mode detection) */
+		if (static_key_enabled(&ksu_is_input_hook_enabled))
+			static_branch_disable(&ksu_is_input_hook_enabled);
+	}
 #endif // #ifdef KSU_SUSFS
 
 #if defined(__x86_64__) && !defined(CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER)

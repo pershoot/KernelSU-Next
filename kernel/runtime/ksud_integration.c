@@ -167,6 +167,10 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
     if (!filename_ptr)
         return 0;
 
+    /* In recovery mode, skip all ksud hooks to prevent boot loops */
+    if (unlikely(ksu_is_recovery))
+        return 0;
+
     filename = *filename_ptr;
     if (IS_ERR(filename)) {
         return 0;
@@ -527,7 +531,13 @@ static void ksu_install_rc_hook(struct file *file)
 
 void ksu_handle_sys_read(unsigned int fd, char __user **buf_ptr, size_t *count_ptr)
 {
-    struct file *file = fget(fd);
+    struct file *file;
+
+    /* In recovery mode, skip init.rc hook */
+    if (unlikely(ksu_is_recovery))
+        return;
+
+    file = fget(fd);
     if (!file) {
         return;
     }
@@ -539,7 +549,13 @@ void ksu_handle_sys_read(unsigned int fd, char __user **buf_ptr, size_t *count_p
 void ksu_handle_vfs_fstat(int fd, loff_t *kstat_size_ptr)
 {
     loff_t new_size = *kstat_size_ptr + ksu_rc_len;
-    struct file *file = fget(fd);
+    struct file *file;
+
+    /* In recovery mode, skip init.rc fstat hook */
+    if (unlikely(ksu_is_recovery))
+        return;
+
+    file = fget(fd);
 
     if (!file)
         return;
@@ -599,6 +615,19 @@ bool ksu_is_safe_mode()
 
     if (ksu_late_loaded) {
         return false;
+    }
+
+    /* Recovery mode implies safe mode */
+    if (ksu_is_recovery) {
+        pr_info("Recovery boot mode detected, enabling safe mode\n");
+        safe_mode = true;
+        return true;
+    }
+
+    if (saved_command_line && (strstr(saved_command_line, "androidboot.mode=recovery") || strstr(saved_command_line, "bootmode=recovery"))) {
+        pr_info("Recovery boot mode detected in cmdline, enabling safe mode!\n");
+        safe_mode = true;
+        return true;
     }
 
     // stop hook first!
