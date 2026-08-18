@@ -307,4 +307,12 @@
     <string name="sulog_uid">UID %1$s</string>
     <string name="sulog_status_success">Success</string>
     <string name="sulog_status_exit">Exit %1$d</string>
+    <string name="settings_app_lock">App lock</string>
+    <string name="settings_app_lock_summary">Require authentication when opening the app.</string>
+    <string name="settings_app_lock_timeout">Grace period</string>
+    <string name="settings_app_lock_timeout_immediate">Immediate</string>
+    <string name="settings_app_lock_timeout_1m">1 minute</string>
+    <string name="settings_app_lock_timeout_5m">5 minutes</string>
+    <string name="biometric_prompt_subtitle">Unlock Manager</string>
+    <string name="biometric_prompt_subtitle_module">Unlock %1$s</string>
 </resources>

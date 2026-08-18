@@ -158,4 +158,5 @@ dependencies {
     implementation(libs.lsposed.cxx)
 
     implementation(libs.mmrl.ui)
+    implementation("androidx.biometric:biometric:1.2.0-alpha05")
 }
