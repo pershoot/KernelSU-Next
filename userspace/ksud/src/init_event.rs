@@ -268,6 +268,17 @@ pub fn soft_reboot() -> Result<()> {
     if !status.success() {
         warn!("stop exited with status: {status}");
     }
+
+    // Wait for Zygote teardown to prevent injection race conditions
+    let rp = resetprop();
+    let timeout = Some(std::time::Duration::from_secs(2));
+    if sys_prop::get("init.svc.zygote").is_some() {
+        let _ = rp.wait("init.svc.zygote", Some("stopped"), timeout);
+    }
+    if sys_prop::get("init.svc.zygote_secondary").is_some() {
+        let _ = rp.wait("init.svc.zygote_secondary", Some("stopped"), timeout);
+    }
+
     info!("post-fs-data");
     on_post_data_fs()?;
     info!("start");
