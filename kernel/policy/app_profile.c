@@ -12,6 +12,10 @@
 #include <linux/uidgid.h>
 #include <linux/version.h>
 
+#ifdef CONFIG_KSU_SUSFS
+#include <linux/susfs_def.h>
+#endif
+
 #include "policy/allowlist.h"
 #include "policy/app_profile.h"
 #include "klog.h" // IWYU pragma: keep
@@ -77,7 +81,7 @@ void seccomp_filter_release(struct task_struct *tsk);
 static bool has_call_to_spin_lock = false;
 #endif
 
-static void disable_seccomp(void)
+void disable_seccomp(void)
 {
     struct task_struct *fake;
 
@@ -138,7 +142,11 @@ int escape_with_root_profile(void)
         return -ENOMEM;
     }
 
+#ifdef CONFIG_KSU_SUSFS
+    if (susfs_is_current_ksu_domain()) {
+#else
     if (cred->euid.val == 0) {
+#endif
         pr_warn("Already root, don't escape!\n");
         goto out_abort_creds;
     }
@@ -201,15 +209,18 @@ int escape_with_root_profile(void)
 
     commit_creds(cred);
 
-    disable_seccomp();
+    if (likely(test_thread_flag(TIF_SECCOMP)))
+        disable_seccomp();
 
     if (profile->flags & FLAG_KSU_NO_NEW_PRIVS) {
         set_thread_flag(TIF_KSU_DISABLE_ESCAPE_WITH_ROOT);
     }
 
+#ifndef CONFIG_KSU_SUSFS
     for_each_thread (p, t) {
         ksu_set_task_tracepoint_flag(t);
     }
+#endif
 
     setup_mount_ns(profile->namespaces);
     ksu_put_root_profile(profile);
@@ -222,16 +233,18 @@ out_abort_creds:
     return ret;
 }
 
-void escape_to_root_for_init(void)
+int escape_to_root_for_init(void)
 {
     struct cred *cred = prepare_creds();
     if (!cred) {
         pr_err("Failed to prepare init's creds!\n");
-        return;
+        return -EINVAL;
     }
 
     setup_selinux(KERNEL_SU_CONTEXT, cred);
     commit_creds(cred);
+
+    return 0;
 }
 
 void __init ksu_app_profile_init(void)
