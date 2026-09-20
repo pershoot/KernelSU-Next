@@ -270,6 +270,26 @@ int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
     return 0;
 }
 
+/*
+ * Required by the generic SUSFS fs/exec.c patch (base kernel, applied
+ * separately from KernelSU-Next). Upstream SUSFS assumes a two-phase
+ * sucompat design: a pre-exec permission check, then a distinct
+ * post-exec step (ksu_install_su_fd()) that actually grants the su
+ * session. pershoot/KernelSU-Next collapsed that into one synchronous
+ * step: ksu_handle_execveat_sucompat() above already calls
+ * escape_with_root_profile() (kernel/policy/app_profile.c) the moment
+ * `su` is detected, before the exec proceeds. ksu_install_su_fd() does
+ * not exist anywhere in this fork -- there is no separate "install su
+ * fd" stage left to run afterward. This hook is therefore intentionally
+ * a no-op: the work it would have done already happened above.
+ */
+int ksu_handle_post_execveat_sucompat(int *fd, struct filename **filename_ptr,
+                 void *argv_user, void *envp_user,
+                 int *__never_use_flags, int *retval)
+{
+    return 0;
+}
+
 extern struct static_key_true is_first_zygote;
 
 int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv,
