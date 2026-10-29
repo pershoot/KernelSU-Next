@@ -281,15 +281,26 @@ int __nocfi my_setprocattr(const char *name, void *value, size_t size)
         return error;
 
     /* Obtain a SID for the context, if one was specified. */
-    if (size && str[0] && str[0] != '\n') {
-        if (str[size - 1] == '\n') {
-            str[size - 1] = 0;
-            size--;
+    if (size && str[0]) {
+        bool newline_prefix = (str[0] == '\n');
+
+        if (newline_prefix && size > 1) {
+            str[0] = 'u';
         }
-        error2 = __security_context_to_sid_with_policy(backup_sepolicy, value, size, &tmp_sid, SECSID_NULL, GFP_KERNEL,
-                                                     &sid, &error);
-        if (error2 || error)
-            return error2 ?: error;
+        if (str[0] != '\n') {
+            if (str[size - 1] == '\n') {
+                str[size - 1] = 0;
+                size--;
+            }
+            error2 = __security_context_to_sid_with_policy(backup_sepolicy, value, size, &tmp_sid, SECSID_NULL,
+                                                           GFP_KERNEL, &sid, &error);
+            if (newline_prefix) {
+                str[0] = '\n';
+                return -EINVAL;
+            }
+            if (error2 || error)
+                return error2 ?: error;
+        }
     }
 
     new = prepare_creds();
