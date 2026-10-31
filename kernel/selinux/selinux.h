@@ -55,4 +55,16 @@ static inline int ksu_selinux_inode_init(void)
 
 extern u32 ksu_file_sid;
 
+#ifdef CONFIG_KSU_SUSFS
+bool susfs_is_sid_equal(const struct cred *cred, u32 sid2);
+u32 susfs_get_sid_from_name(const char *secctx_name);
+u32 susfs_get_current_sid(void);
+void susfs_set_batch_sid(void);
+bool susfs_is_current_zygote_domain(void);
+bool susfs_is_current_zygote_next_domain(void);
+bool susfs_is_current_ksu_domain(void);
+bool susfs_is_current_init_domain(void);
+extern void susfs_add_sus_type_by_type_name(char *type_name);
+#endif
+
 #endif

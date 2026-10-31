@@ -8,6 +8,9 @@
 #include <linux/rculist.h>
 #include <linux/task_work.h>
 #include <linux/version.h>
+#ifdef CONFIG_KSU_SUSFS
+#include <linux/susfs.h>
+#endif
 #include "klog.h" // IWYU pragma: keep
 #include "manager/throne_tracker.h"
 
@@ -30,6 +33,10 @@ static void ksu_track_throne_tw_func(struct callback_head *cb)
     if (current->flags & PF_EXITING)
         return;
     track_throne(false);
+#ifdef CONFIG_KSU_SUSFS
+    // Renew the priority uid bitmap filter
+    susfs_parse_priority_app_strings();
+#endif
 }
 
 // Never scan from the fsnotify handler: fsnotify_mark_srcu and the rename's dir
@@ -52,6 +59,10 @@ static void ksu_defer_track_throne(void)
     }
     pr_warn("defer track_throne failed, run it inline\n");
     track_throne(false);
+#ifdef CONFIG_KSU_SUSFS
+    // Renew the priority uid bitmap filter
+    susfs_parse_priority_app_strings();
+#endif
 }
 
 static int ksu_handle_inode_event(struct fsnotify_mark *mark, u32 mask,
