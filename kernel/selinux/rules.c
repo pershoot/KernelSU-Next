@@ -104,6 +104,12 @@ void apply_kernelsu_rules()
     // allow all!
     ksu_allow(db, KERNEL_SU_DOMAIN, ALL, ALL, ALL);
 
+    ksu_allow(db, "domain", KERNEL_SU_DOMAIN, "unix_stream_socket", "read");
+    ksu_allow(db, "domain", KERNEL_SU_DOMAIN, "unix_stream_socket", "write");
+    ksu_allow(db, "domain", KERNEL_SU_DOMAIN, "unix_stream_socket", "connectto");
+    ksu_allow(db, "domain", KERNEL_SU_DOMAIN, "unix_stream_socket", "getopt");
+    ksu_allow(db, "domain", KERNEL_SU_DOMAIN, "unix_stream_socket", "getattr");
+
     // allow us do any ioctl
     if (db->policyvers >= POLICYDB_VERSION_XPERMS_IOCTL) {
         ksu_allowxperm(db, KERNEL_SU_DOMAIN, ALL, "blk_file", ALL);
@@ -164,12 +170,19 @@ void apply_kernelsu_rules()
 
     // Return value ignored: the policy is published either way.
     ksu_policydb_fixup_len(db, "apply_kernelsu_rules");
+#ifndef CONFIG_KSU_SUSFS
     pol->latest_granting = old_pol->latest_granting + 1;
+#endif
     rcu_assign_pointer(selinux_state.policy, pol);
     synchronize_rcu();
     ksu_destroy_sepolicy(old_pol);
 
+#ifndef CONFIG_KSU_SUSFS
     reset_avc_cache(pol->latest_granting);
+#else
+    reset_avc_cache(0);
+    susfs_set_batch_sid();
+#endif
 out_unlock:
     mutex_unlock(&selinux_state.policy_mutex);
 }
@@ -541,12 +554,18 @@ int handle_sepolicy(void __user *user_data, u64 data_len)
 
     // Return value ignored: the policy is published either way.
     ksu_policydb_fixup_len(db, "handle_sepolicy");
+#ifndef CONFIG_KSU_SUSFS
     pol->latest_granting = old_pol->latest_granting + 1;
+#endif
     rcu_assign_pointer(selinux_state.policy, pol);
     synchronize_rcu();
     ksu_destroy_sepolicy(old_pol);
 
+#ifndef CONFIG_KSU_SUSFS
     reset_avc_cache(pol->latest_granting);
+#else
+    reset_avc_cache(0);
+#endif
     ret = success_cmd_count;
     goto out_unlock;
 
