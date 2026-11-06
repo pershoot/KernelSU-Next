@@ -41,6 +41,7 @@
 #define CMD_SUSFS_SUS_SU                        0x60000 /* deprecated */
 #define CMD_SUSFS_ENABLE_AVC_LOG_SPOOFING       0x60010
 #define CMD_SUSFS_ADD_SUS_MAP                   0x60020
+#define CMD_SUSFS_SET_PRIORITY_UID_FILTER       0x60030
 
 /* 126 is a USERSPACE-side sentinel the kernel never produces: the ksu_susfs C tool pre-seeds payload.err with it and
  * prints "SUSFS operation not supported, please enable it in kernel" when the field is STILL 126 after the syscall,
@@ -58,6 +59,7 @@
 #define SUSFS_ENABLED_FEATURES_SIZE             8192
 #define SUSFS_MAX_VERSION_BUFSIZE               16
 #define SUSFS_MAX_VARIANT_BUFSIZE               16
+#define SUSFS_APP_STR_BUF_SIZE                  65535
 
 #define SUSFS_VERSION_STR "v2.3.0"
 #define SUSFS_VARIANT_STR "GKI-LKM"
@@ -81,6 +83,12 @@ struct st_susfs_sus_path {
 
 struct st_susfs_sus_map {
 	char target_pathname[SUSFS_MAX_LEN_PATHNAME];
+	int err;
+};
+
+/* getpriority uid filter */
+struct st_susfs_priority_uid_filter {
+	char app_strings[SUSFS_APP_STR_BUF_SIZE];
 	int err;
 };
 
